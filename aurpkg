@@ -1,5 +1,5 @@
 source ~/.config/aurpkg/aurpkg.conf
-echo "Which package do you wnat to install?"
+echo "Which package do you want to install?"
 read PKG
 cd ~
 mkdir build
