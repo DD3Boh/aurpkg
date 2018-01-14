@@ -14,4 +14,9 @@ fi
 if [[ $RMCONF == y ]]
 then
     rm -rf ~/.config/aurpkg
+    mkdir ~/.config/aurpkg
+    touch ~/.config/aurpkg/aurpkg.conf
+    echo "What is your text editor?"
+    read TEXTEDITOR
+    echo "EDITOR=$TEXTEDITOR" >> ~/.config/aurpkg/aurpkg.conf
 fi
