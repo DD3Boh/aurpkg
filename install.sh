@@ -8,4 +8,3 @@ chmod +x /bin/aurpkg-config
 cd ~
 rm -rf ~/aurpkg
 aurpkg-config
-echo "done"
