@@ -11,6 +11,8 @@ read REPLY0
 if [[ $REPLY0 == "y" ]]
 then
     $EDITOR ./PKGBUILD
+else
+    exit 1
 fi
 echo "Continue? (y/n)"
 read REPLY1
@@ -20,7 +22,7 @@ then
     echo ""
     sudo pacman -U $(ls | grep '.tar.xz') --noconfirm
 else
-    echo "Exiting"
+    echo "Operation canceled"
 fi
 cd ~
 rm -rf build
