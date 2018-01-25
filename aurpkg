@@ -1,0 +1,27 @@
+echo "Welcome to aurpkg"
+echo "What do you want to do?"
+echo ""
+# the actual menu
+echo "[1] Install or update a package"
+echo "[2] Search for a package in AUR"
+echo "    ---------------------------"
+echo "[3] Update aurpkg"
+echo "[4] Configure aurpkg"
+read OPT
+if [[ $OPT ==  "1" ]]
+then
+    aurpkg-install
+fi
+if [[ $OPT ==  "2" ]]
+then
+    xdg-open https://aur.archlinux.org/packages
+fi
+if [[ $OPT ==  "3" ]]
+then
+    sudo sudo sudo sudo sudo curl https://raw.githubusercontent.com/gstux/aurpkg/master/update.sh | sh
+fi
+if [[ $OPT ==  "4" ]]
+then
+    aurpkg-config
+fi
+
