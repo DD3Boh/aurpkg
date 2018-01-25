@@ -18,7 +18,7 @@ then
 fi
 if [[ $OPT ==  "3" ]]
 then
-    sudo sudo sudo sudo sudo curl https://raw.githubusercontent.com/gstux/aurpkg/master/update.sh | sh
+    curl https://raw.githubusercontent.com/gstux/aurpkg/master/update.sh | sh
 fi
 if [[ $OPT ==  "4" ]]
 then
