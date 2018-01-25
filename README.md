@@ -8,5 +8,5 @@ Execute the following as root:<br>
 Execute the following as root:<br>
 `curl https://raw.githubusercontent.com/gstux/aurpkg/master/uninstall.sh | sh`
 ### Updating
-Execute the following as root:<br>
+Execute the following:<br>
 `curl https://raw.githubusercontent.com/gstux/aurpkg/master/update.sh | sh`
