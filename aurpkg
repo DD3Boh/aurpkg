@@ -1,28 +1,37 @@
 source ~/.config/aurpkg/aurpkg.conf
 echo "Which package do you want to install?"
 read PKG
+# create the build directory
 cd ~
 mkdir build
 cd build
+# clone the repository
 git clone https://aur.archlinux.org/${PKG}.git
 cd ./${PKG}
 echo "View the PKGBUILD? (y/n)"
 read REPLY0
 if [[ $REPLY0 == "y" ]]
 then
+    # open the PKGBUILD with a text editor
     $EDITOR ./PKGBUILD
-else
-    exit 1
 fi
 echo "Continue? (y/n)"
 read REPLY1
 if [[ $REPLY1 == "y" ]]
 then
+    # build the package
     makepkg
     echo ""
+    # install the package
     sudo pacman -U $(ls | grep '.tar.xz') --noconfirm
 else
+    # remove the build directory
+    cd ~
+    rm -rf build
     echo "Operation canceled"
+    # exit from aurpkg
+    exit 1
 fi
+# remove the build directory
 cd ~
 rm -rf build
