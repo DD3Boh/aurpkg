@@ -9,3 +9,4 @@ sudo chmod +x /bin/aurpkg-install
 sudo chmod +x /bin/aurpkg-config
 cd ~
 rm -rf ~/aurpkg
+echo "done"
