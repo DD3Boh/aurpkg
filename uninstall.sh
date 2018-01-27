@@ -1,4 +1,2 @@
-sudo rm /bin/aurpkg
-sudo rm /bin/aurpkg-install
-sudo rm /bin/aurpkg-config
+sudo rm /bin/aurpkg*
 echo "done"
