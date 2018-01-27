@@ -1,27 +1,166 @@
-echo "Welcome to aurpkg"
-echo "What do you want to do?"
-echo ""
-# the actual menu
-echo "[1] Install or update a package"
-echo "[2] Search for a package in AUR"
-echo "    ---------------------------"
-echo "[3] Update aurpkg"
-echo "[4] Configure aurpkg"
-read OPT
-if [[ $OPT ==  "1" ]]
-then
-    aurpkg-install
-fi
-if [[ $OPT ==  "2" ]]
-then
-    xdg-open https://aur.archlinux.org/packages
-fi
-if [[ $OPT ==  "3" ]]
-then
-    curl https://raw.githubusercontent.com/gstux/aurpkg/master/update.sh | sh
-fi
-if [[ $OPT ==  "4" ]]
-then
-    aurpkg-config
-fi
+# Export variables
+# Log initial dir
+initial_dir=$(pwd);
 
+# Export the various functions
+aurpkg_help() {
+	echo "List of the availables commands:";
+	echo "";
+	echo "    -h | --help						Get the commands list";
+	echo "";
+	echo "    -S | --install <packagename>			Install the chosen AUR package(s)";
+	echo "";
+	echo "    -R | --remove | --uninstall <packagename>		Remove the chosen package(s)";
+	echo "";
+	echo "    -U | --update <packagename>				Update the chosen package(s)";
+};
+
+aurpkg_install() {
+	# Create the build directory
+	mkdir /tmp/build;
+	cd /tmp/build;
+	# Clone the repository
+	git clone https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
+	cd /tmp/build/${PKG};
+	# Choose if seeing the PKGBUILD
+	echo "View the PKGBUILD? (Y/n)";
+	read -s -n 1 REPLY0;
+	if [[ $REPLY0 = "Y" ]] || [[ $REPLY0 = "y" ]] || [[ $REPLY0 = "" ]]; then
+		# open the PKGBUILD with a text editor
+		if [[ $EDITOR == "" ]]; then
+			vi ./PKGBUILD;
+		else
+			$EDITOR ./PKGBUILD;
+		fi;
+	fi;
+	# Choose to install or not
+	echo "Continue? (Y/n)";
+	read -s -n 1 REPLY1;
+	if [[ $REPLY1 = "Y" ]] || [[ $REPLY1 = "y" ]] || [[ $REPLY1 = "" ]]; then
+		# Build the package
+		makepkg -s;
+		echo "";
+		# Install the package
+		sudo pacman -U $(ls | grep '.tar.xz') --noconfirm;
+		# Log the package
+		if [[ ! -f ~/.aurpkg_list ]]; then
+			touch ~/.aurpkg_list;
+		fi;
+		if [[ $(grep -r ${PKG} ~/.aurpkg_list) == "" ]]; then
+			echo ${PKG} >> ~/.aurpkg_list;
+		fi;
+	else
+		echo "Operation canceled";
+	fi
+	# Remove the build directory
+	cd $initial_dir;
+	rm -rf /tmp/build;
+};
+
+aurpkg_uninstall() {
+	# Uninstall the package
+	sudo pacman -R $PKG;
+	# Remove the package from the packages list
+	sed -i /$PKG/d ~/.aurpkg_list;
+};
+
+updating_function() {
+	# Create the build directory
+	mkdir /tmp/build;
+	cd /tmp/build;
+	# Clone the repository
+	git clone https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
+	cd /tmp/build/${PKG};
+	# Build the package
+	makepkg -s;
+	echo "";
+	# Update the package
+	sudo pacman -U $(ls | grep '.tar.xz') --noconfirm;
+	# Remove the build directory
+	cd $initial_dir;
+	rm -rf /tmp/build;
+};
+
+aurpkg_update() {
+	# check the local package version
+	local_package_version=$(pacman -Qi $PKG | grep Version | sed 's/Version         : //' | sed 's/-1//')
+	# check the remote package version
+	remote_package_version=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=$PKG | grep pkgver= | sed 's/pkgver=//')
+	# Check if the versions are the same, if not check the git package
+	if [[ $remote_package_version != $local_package_version ]]; then
+		remote_package_version=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=$PKG\-git | grep pkgver= | sed 's/pkgver=//')
+	fi;
+	# If the package version is different update the package
+	if [[ $remote_package_version != $local_package_version ]]; then
+		updating_function;
+	else
+		echo "The package $PKG is already up to date";
+	fi;
+};
+
+# The scripty part
+if [[ ${1} != "" ]]; then
+	while [[ $# -ge 1 ]]; do
+		case "${1}" in
+
+			# Helping menu
+			"-h" | "--help")
+			shift
+
+				aurpkg_help;;
+
+			# Installing
+			"-S" | "--install")
+			shift
+				if [[ ${1} == "" ]]; then
+					echo "Fatal: No package specified";
+					exit 1;
+				else
+					while [[ $# -ge 1 ]]; do
+						PKG="${1}";
+						aurpkg_install;
+					shift
+					done
+				fi;;
+
+			# Uninstall/remove
+			"-R" | "--remove" | "--uninstall")
+			shift
+
+				if [[ ${1} == "" ]]; then
+					echo "Fatal: No package specified";
+					exit 1;
+				else
+					while [[ $# -ge 1 ]]; do
+						PKG="${1}";
+						aurpkg_uninstall;
+					shift
+					done
+				fi;;
+
+			# Update
+			"-U" | "--update")
+			shift
+
+				if [[ ${1} == "" ]]; then
+					echo "Fatal: No package specified";
+					exit 1;
+				else
+					while [[ $# -ge 1 ]]; do
+						PKG="${1}";
+						aurpkg_update;
+					shift
+					done
+				fi;;
+
+			# If no command matches
+			*)
+				echo "Invalid command";
+				echo "Type aurpkg --help for a list of the commands";;
+		esac
+	shift
+	done
+else
+	echo "Invalid command";
+	echo "Type aurpkg --help for a list of the commands";
+fi;
