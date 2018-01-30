@@ -1,12 +1,9 @@
 # aurpkg
 A simple and light automated installer for AUR packages.<br>
 <br>
-### Installing
-Execute the following as root:<br>
-`curl https://raw.githubusercontent.com/gstux/aurpkg/master/install.sh | sh` <br>
-### Uninstalling
-Execute the following as root:<br>
-`curl https://raw.githubusercontent.com/gstux/aurpkg/master/uninstall.sh | sh`
-### Updating
+### Installing / Updating
 Execute the following:<br>
-`curl https://raw.githubusercontent.com/gstux/aurpkg/master/update.sh | sh`
+`sudo curl -o /bin/aurpkg https://raw.githubusercontent.com/gstux/aurpkg/master/aurpkg && sudo chmod +x /bin/aurpkg` <br>
+### Uninstalling
+Execute the following:<br>
+`sudo rm /bin/aurpkg`
