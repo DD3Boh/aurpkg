@@ -1,3 +1,8 @@
+# Check for git presence
+if [[ $(pacman -T git) != "" ]]; then
+	sudo pacman -S git --noconfirm
+fi;
+
 # Export variables
 # Log initial dir
 initial_dir=$(pwd);
