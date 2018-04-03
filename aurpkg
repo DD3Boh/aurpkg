@@ -1,4 +1,4 @@
-version=1.0.2
+ver=1.0.2
 # Check for git presence
 if [[ $(pacman -T git) != "" ]]; then
 	sudo pacman -S git --noconfirm
@@ -24,7 +24,7 @@ aurpkg_help() {
 };
 
 aurpkg_version() {
-    echo "aurpkg v${version}";
+    echo "aurpkg v${ver}";
     echo "";
     echo "A simple and light automated installer for AUR packages.";
     echo "";
