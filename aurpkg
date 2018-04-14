@@ -1,7 +1,7 @@
-version=1.0.2
+version=1.0.3
 # Check for git presence
 if [[ $(pacman -T git) != "" ]]; then
-	sudo pacman -S git --noconfirm
+	echo "you need git to run aurpkg"
 fi;
 
 # Export variables
