@@ -1,7 +1,8 @@
 version=1.0.3
 # Check for git presence
 if [[ $(pacman -T git) != "" ]]; then
-	echo "you need git to run aurpkg"
+	echo "You need git to run aurpkg!"
+	To install it run the following as root: pacman -S git"
 fi;
 
 # Export variables
