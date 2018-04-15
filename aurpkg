@@ -3,6 +3,7 @@ version=1.0.4
 if [[ $(pacman -T git) != "" ]]; then
 	echo "You need git to run aurpkg."
 	To install it run the following as root: pacman -S git"
+	exit 1
 fi;
 
 # Export variables
