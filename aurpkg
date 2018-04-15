@@ -1,4 +1,4 @@
-version=1.0.3
+version=1.0.4
 # Check for git presence
 if [[ $(pacman -T git) != "" ]]; then
 	echo "You need git to run aurpkg!"
