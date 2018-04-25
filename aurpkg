@@ -11,8 +11,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-version=1.1
+version=1.1.1
 # Check for git presence
 if [[ $(pacman -T git) != "" ]]; then
 	echo "You need git to run aurpkg.";
@@ -25,20 +24,21 @@ fi;
 initial_dir=$(pwd);
 
 # Export the various functions
+
 aurpkg_help() {
 	echo "List of the availables commands:";
 	echo "";
-	echo "-h | --help                                         Get the commands list";
+	echo "-h | --help                               Get the commands list";
 	echo "";
-	echo "-S | --install <packagename>			    Install the chosen AUR package(s)";
+	echo "-S | --install <packagename>              Install the chosen AUR package(s)";
 	echo "";
-	echo "-R | --remove | --uninstall <packagename>	    Remove the chosen package(s)";
+	echo "-R | --remove | --uninstall <packagename> Remove the chosen package(s)";
 	echo "";
-	echo "-U | --update <packagename>    			    Update the chosen package(s)";
+	echo "-U | --update <packagename>               Update the chosen package(s)";
 	echo "";
-	echo "-s | --search <query>                               Search a package";
-    	echo "";
-    	echo "     --version                                      Display version and other infos";
+	echo "-s | --search <query>                     Search a package";
+    echo "";
+    echo "--about | --version                       Display version and other infos";
 };
 
 aurpkg_version() {
@@ -157,7 +157,7 @@ if [[ ${1} != "" ]]; then
 				aurpkg_help;;
 				
            		# Version infos
-          		"--version")
+          		"--version" | "about")
             		shift
 			
                 		aurpkg_version;;
