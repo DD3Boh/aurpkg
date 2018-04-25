@@ -38,7 +38,7 @@ aurpkg_help() {
 	echo "";
 	echo "-s | --search <query>                     Search a package";
         echo "";
-        echo "--about | --version                       Display version and other infos";
+        echo " --about | --version                       Display version and other infos";
 };
 
 aurpkg_version() {
