@@ -26,7 +26,7 @@ initial_dir=$(pwd);
 # Export the various functions
 
 aurpkg_help() {
-	echo "List of the availables commands:";
+	echo "List of the available commands:";
 	echo "";
 	echo "-h | --help                               Get the commands list";
 	echo "";
