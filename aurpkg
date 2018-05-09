@@ -34,9 +34,9 @@ aurpkg_help() {
 	echo "";
 	echo "-R | --remove | --uninstall <packagename> Remove the chosen package(s)";
 	echo "";
-	echo "-U | --update <packagename>               Update the chosen package(s)";
+	echo "-Syu | -U | --update <packagename>        Update the chosen package(s)";
 	echo "";
-	echo "-s | --search <query>                     Search a package";
+	echo "-Ss | -s | --search <query>               Search a package";
         echo "";
         echo "--about | --version                       Display version and other infos";
 };
@@ -192,7 +192,7 @@ if [[ ${1} != "" ]]; then
 				fi;;
 
 			# Update
-			"-U" | "--update")
+			"-Syu" | "-U" | "--update")
 			shift
 
 				if [[ ${1} == "" ]]; then
@@ -207,7 +207,7 @@ if [[ ${1} != "" ]]; then
 				fi;;
 				
 			# Search
-			"-s" | "--search")
+			"-Ss" | "-s" | "--search")
 			shift
 			
 				if [[ ${1} == "" ]]; then
