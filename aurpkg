@@ -163,7 +163,7 @@ if [[ ${1} != "" ]]; then
                 		aurpkg_version;;
 
 			# Installing
-			"-S" | "--install")
+			"-S" | "--sync" | "--install")
 			shift
 				if [[ ${1} == "" ]]; then
 					echo "Fatal: No package specified";
