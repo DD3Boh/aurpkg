@@ -28,7 +28,7 @@ initial_dir=$(pwd);
 aurpkg_help() {
 	echo "List of the available commands:";
 	echo "";
-	echo "     -h | --help                                Get the commands list";
+	echo "     -h | --help                                Show this help and exit";
 	echo "";
 	echo "     -S | --install <packagename>               Install the chosen AUR package(s)";
 	echo "";
