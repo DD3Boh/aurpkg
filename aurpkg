@@ -157,7 +157,7 @@ if [[ ${1} != "" ]]; then
 				aurpkg_help;;
 				
            		# Version infos
-          		"--version" | "--about")
+          		"--version" | "--about" | "-v")
             		shift
 			
                 		aurpkg_version;;
