@@ -21,7 +21,7 @@ fi;
 
 # Variables
 initial_dir=$(pwd);
-version=1.1.4;
+version=1.1.5;
 
 # Functions
 
@@ -43,6 +43,7 @@ aurpkg_version() {
     echo "This program may be freely redistributed under";
     echo "the terms of the GNU General Public License.";
     echo "";
+    echo "gstux@protonmail.com";
     echo "https://github.com/gstux/aurpkg";
     echo "https://gstux.github.io";
 };
