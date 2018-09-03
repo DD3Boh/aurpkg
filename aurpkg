@@ -54,37 +54,45 @@ aurpkg_install() {
 	cd /tmp/build;
 	# Clone the repository
 	git clone https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
-	cd /tmp/build/${PKG};
-	# Choose if seeing the PKGBUILD
-	echo "View the PKGBUILD? (Y/n)";
-	read -s -n 1 REPLY0;
-	if [[ $REPLY0 = "Y" ]] || [[ $REPLY0 = "y" ]] || [[ $REPLY0 = "" ]]; then
-		# open the PKGBUILD with a text editor
-		if [[ $EDITOR == "" ]]; then
-			vi ./PKGBUILD;
+	# Try with pacman if the AUR repo is empty
+	if [[ $(ls /tmp/build/$PKG) == "" ]]; then
+		echo "$PKG not found in AUR repositories, trying as official package";
+		sudo pacman -S $PKG;
+		exit 1;
+	else
+		cd /tmp/build/${PKG};
+
+		# Choose if seeing the PKGBUILD
+		echo "View the PKGBUILD? (Y/n)";
+		read -s -n 1 REPLY0;
+		if [[ $REPLY0 = "Y" ]] || [[ $REPLY0 = "y" ]] || [[ $REPLY0 = "" ]]; then
+			# open the PKGBUILD with a text editor
+			if [[ $EDITOR == "" ]]; then
+				vi ./PKGBUILD;
+			else
+				$EDITOR ./PKGBUILD;
+			fi;
+		fi;
+		# Choose to install or not
+		echo "Continue? (Y/n)";
+		read -s -n 1 REPLY1;
+		if [[ $REPLY1 = "Y" ]] || [[ $REPLY1 = "y" ]] || [[ $REPLY1 = "" ]]; then
+			# Build the package
+			makepkg -s;
+			echo "";
+			# Install the package
+			sudo pacman -U $(ls | grep '.tar.xz') --noconfirm;
+			# Log the package
+			if [[ ! -f ~/.aurpkg_list ]]; then
+				touch ~/.aurpkg_list;
+			fi;
+			if [[ $(grep -r ${PKG} ~/.aurpkg_list) == "" ]]; then
+				echo ${PKG} >> ~/.aurpkg_list;
+			fi;
 		else
-			$EDITOR ./PKGBUILD;
+			echo "Operation canceled";
 		fi;
 	fi;
-	# Choose to install or not
-	echo "Continue? (Y/n)";
-	read -s -n 1 REPLY1;
-	if [[ $REPLY1 = "Y" ]] || [[ $REPLY1 = "y" ]] || [[ $REPLY1 = "" ]]; then
-		# Build the package
-		makepkg -s;
-		echo "";
-		# Install the package
-		sudo pacman -U $(ls | grep '.tar.xz') --noconfirm;
-		# Log the package
-		if [[ ! -f ~/.aurpkg_list ]]; then
-			touch ~/.aurpkg_list;
-		fi;
-		if [[ $(grep -r ${PKG} ~/.aurpkg_list) == "" ]]; then
-			echo ${PKG} >> ~/.aurpkg_list;
-		fi;
-	else
-		echo "Operation canceled";
-	fi
 	# Remove the build directory
 	cd $initial_dir;
 	rm -rf /tmp/build;
