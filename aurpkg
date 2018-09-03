@@ -116,7 +116,7 @@ updating_function() {
 
 aurpkg_update() {
 	# check the local package version
-	local_package_version=$(pacman -Qi $PKG | grep Version | sed 's/Version         : //' | sed 's/-1//')
+	local_package_version=$(pacman -Q $PKG | sed "s/$PKG //" | sed 's/-1//')
 	# check the remote package version
 	remote_package_version=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=$PKG | grep pkgver= | sed 's/pkgver=//')
 	# Check if the versions are the same, if not check the git package
