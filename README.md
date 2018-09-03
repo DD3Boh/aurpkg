@@ -9,4 +9,4 @@ Execute the following commands as root:<br>
 Execute the following command as root:<br>
 `rm /bin/aurpkg` <br>
 <br>
-Type `aurpkg -h` to get the commands list
+Type `aurpkg -h` to get help.
