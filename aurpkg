@@ -28,12 +28,12 @@ version=1.1.5;
 aurpkg_help() {
 	echo "usage: aurpkg [operation] <package>"
 	echo "operations:";
-	echo "-h | --help          show this help";
-	echo "-S | --sync <pkg>    install a package";
-	echo "-R | --remove <pkg>  remove a package";
-	echo "-U | --update <pkg>  update a package";
-	echo "-s | --search <query>     look for a package";
-    echo "-a | --version       display version";
+	echo "    -h | --help			show this help";
+	echo "    -S | --sync <pkg>		install a package";
+	echo "    -R | --remove <pkg>		remove a package";
+	echo "    -U | --update <pkg>		update a package";
+	echo "    -s | --search <query>	look for a package";
+	echo "    -a | --version		display version";
 };
 
 aurpkg_version() {
