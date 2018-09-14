@@ -196,7 +196,7 @@ if [[ ${1} != "" ]]; then
 				fi;;
 
 			# Update
-			"-U" | "--update")
+			"-U" | "--update" | "--upgrade")
 			shift
 
 				if [[ ${1} == "" ]]; then
