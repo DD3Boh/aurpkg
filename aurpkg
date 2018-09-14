@@ -31,7 +31,7 @@ aurpkg_help() {
 	echo "-h | --help          show this help";
 	echo "-S | --sync <pkg>    install a package";
 	echo "-R | --remove <pkg>  remove a package";
-	echo "-U | -Syu <pkg>      update a package";
+	echo "-U | --update <pkg>  update a package";
 	echo "-s | -Ss <query>     look for a package";
     echo "-a | --version       display version";
 };
@@ -196,7 +196,7 @@ if [[ ${1} != "" ]]; then
 				fi;;
 
 			# Update
-			"-Syu" | "-U" | "--update")
+			"-U" | "--update")
 			shift
 
 				if [[ ${1} == "" ]]; then
