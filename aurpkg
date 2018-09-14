@@ -32,7 +32,7 @@ aurpkg_help() {
 	echo "-S | --sync <pkg>    install a package";
 	echo "-R | --remove <pkg>  remove a package";
 	echo "-U | --update <pkg>  update a package";
-	echo "-s | -Ss <query>     look for a package";
+	echo "-s | --search <query>     look for a package";
     echo "-a | --version       display version";
 };
 
