@@ -37,15 +37,14 @@ aurpkg_help() {
 };
 
 aurpkg_version() {
-    echo "aurpkg v${version}";
-    echo "Copyright (C) 2018 gstux";
+    echo "    aurpkg v${version}";
+    echo "    Copyright (C) 2018 Davide Garberi";
+    echo "    Copyright (C) 2018 gstux";
     echo "";
-    echo "This program may be freely redistributed under";
-    echo "the terms of the GNU General Public License.";
+    echo "    This program may be freely redistributed under";
+    echo "    the terms of the GNU General Public License.";
     echo "";
-    echo "gstux@protonmail.com";
-    echo "https://github.com/gstux/aurpkg";
-    echo "https://gstux.github.io";
+    echo "    https://github.com/DD3Boh/aurpkg";
 };
 
 aurpkg_install() {
