@@ -138,16 +138,21 @@ aurpkg_update() {
 	fi;
 };
 
-aurpkg_search () {
-	# Check for links presence
-	if [[ $(pacman -T links) != "" ]]; then
-		echo "You need links to use the search function.";
-		echo "To install it run the following as root: pacman -S links";
-		exit 1;
-	fi;
-	links https://aur.archlinux.org/packages/?K=${query};
-};
+parsejsoninfo() {
+	echo $jsoninfo | sed -e 's/^.*[{,]"'$query'":"//' -e 's/"[,}].*$//'
+}
 
+aurpkg_search() {
+	# Search for keyword on AUR an list result
+	# Grab info from json rpc url and exclude community packages, then parse result
+	wget -q -O - "http://aur.archlinux.org/rpc.php?type=search&arg=$PKG" | sed 's/{"ID":/\n/g' | sed '1d'| grep -Fv '"URLPath":""' |
+	while read jsoninfo; do
+		package=$(parsejsoninfo Name)
+		line="${package}";
+		echo -e "$line" | sed 's/()//' | sed 's/,\"Name\":\"/   /' | sed 's/^.*   /    /';
+		echo -e "    $description";
+	done
+}
 # The scripty part
 if [[ ${1} != "" ]]; then
 	while [[ $# -ge 1 ]]; do
@@ -217,7 +222,7 @@ if [[ ${1} != "" ]]; then
 					echo "No query specified";
 					exit 1;
 				else
-					query=${1};
+					PKG=${1};
 					aurpkg_search;
 				fi;;
 
