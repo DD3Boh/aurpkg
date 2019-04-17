@@ -138,19 +138,21 @@ aurpkg_update() {
 	fi;
 };
 
-parsejsoninfo() {
-	echo $jsoninfo | sed -e 's/^.*[{,]"'$query'":"//' -e 's/"[,}].*$//'
-}
-
 aurpkg_search() {
-	# Search for keyword on AUR an list result
-	# Grab info from json rpc url and exclude community packages, then parse result
-	wget -q -O - "http://aur.archlinux.org/rpc.php?type=search&arg=$PKG" | sed 's/{"ID":/\n/g' | sed '1d'| grep -Fv '"URLPath":""' |
-	while read jsoninfo; do
-		package=$(parsejsoninfo Name)
-		line="${package}";
-		echo -e "$line" | sed 's/()//' | sed 's/,\"Name\":\"/   /' | sed 's/^.*   /    /';
-		echo -e "    $description";
+	# Search for keyword on AUR and list result
+
+	# Total pages of list for the package searched
+	total_pages=$(wget -q -O - "https://aur.archlinux.org/packages/?O=0&SeB=nd&K=$PKG&outdated=&SB=n&SO=a&PP=250&do_Search=Go" | grep 'packages found' -m 1 | sed 's/.*packages found.*Page //' | sed 's/\..*//' | sed 's/.*of //')
+
+	# The current page we are at
+	current_page=$(wget -q -O - "https://aur.archlinux.org/packages/?O=0&SeB=nd&K=$PKG&outdated=&SB=n&SO=a&PP=250&do_Search=Go" | grep 'packages found' -m 1 | sed 's/.*packages found.*Page //' | sed 's/\..*//' | sed 's/ of.*//')
+
+	# Script to search for new pages in case there is any
+	until [ $current_page == $(($total_pages + 1)) ]; do
+		current_page_old=$current_page
+		package_number=$(( ($current_page - 1) * 250))
+		current_page=$((current_page_old + 1))
+		wget -q -O - "https://aur.archlinux.org/packages/?O=$package_number&SeB=nd&K=$PKG&outdated=&SB=n&SO=a&PP=250&do_Search=Go" | grep '<td><a href="/packages/' | sed 's/<td><a href=\"\/packages//'| sed -n 's/\//&\n/;s/.*\n//p' | sed 's/\/.*//'
 	done
 }
 # The scripty part
