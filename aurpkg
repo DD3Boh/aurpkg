@@ -38,8 +38,8 @@ aurpkg_help() {
 
 aurpkg_version() {
     echo "    aurpkg v${version}";
-    echo "    Copyright (C) 2018 Davide Garberi";
     echo "    Copyright (C) 2018 gstux";
+    echo "    Copyright (C) 2018-2019 Davide Garberi";
     echo "";
     echo "    This program may be freely redistributed under";
     echo "    the terms of the GNU General Public License.";
