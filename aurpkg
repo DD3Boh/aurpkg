@@ -48,6 +48,8 @@ aurpkg_version() {
 };
 
 aurpkg_install() {
+	# Clean the old build directory if present
+	rm -rf /tmp/build;
 	# Create the build directory
 	mkdir /tmp/build;
 	cd /tmp/build;
@@ -57,6 +59,7 @@ aurpkg_install() {
 	if [[ $(ls /tmp/build/$PKG) == "" ]]; then
 		echo "$PKG not found in AUR repositories, trying as official package";
 		sudo pacman -S $PKG;
+		rm -rf /tmp/build;
 		exit 1;
 	else
 		cd /tmp/build/${PKG};
