@@ -166,14 +166,12 @@ if [[ ${1} != "" ]]; then
 			# Helping menu
 			"-h" | "--help")
 			shift
-
 				aurpkg_help;;
 				
-           		# Version infos
-          		"--version" | "--about" | "-a")
-            		shift
-			
-                		aurpkg_version;;
+			# Version infos
+			"--version" | "--about" | "-a")
+			shift
+				aurpkg_version;;
 
 			# Installing
 			"-S" | "--sync" | "--install")
