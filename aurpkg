@@ -162,7 +162,12 @@ aurpkg_search() {
 
 aurpkg_info() {
 	pkg_info=$(wget -q -O - https://aur.archlinux.org/packages/$PKG/ | grep "<th>Description" -A 1 | grep "</td>" | sed "s/<\/.*//" | sed 's/.*>//')
-	echo $pkg_info;
+	if [[ $pkg_info == "" ]]; then
+		echo "Invalid package!";
+		echo "Use aurpkg -s <query> to search for packages";
+	else
+		echo $pkg_info;
+	fi;
 };
 
 # The scripty part
