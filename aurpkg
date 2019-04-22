@@ -29,10 +29,11 @@ aurpkg_help() {
 	echo "usage: aurpkg [operation] <package>"
 	echo "operations:";
 	echo "    -h | --help			show this help";
-	echo "    -S | --sync <pkg>		install a package";
+	echo "    -i | --info			search the info for a package";
 	echo "    -R | --remove <pkg>		remove a package";
-	echo "    -U | --update <pkg>		update a package";
 	echo "    -s | --search <query>	look for a package";
+	echo "    -S | --sync <pkg>		install a package";
+	echo "    -U | --update <pkg>		update a package";
 	echo "    -a | --version		display version";
 };
 
@@ -158,6 +159,12 @@ aurpkg_search() {
 		wget -q -O - "https://aur.archlinux.org/packages/?O=$package_number&SeB=nd&K=$PKG&outdated=&SB=n&SO=a&PP=250&do_Search=Go" | grep '<td><a href="/packages/' | sed 's/<td><a href=\"\/packages//'| sed -n 's/\//&\n/;s/.*\n//p' | sed 's/\/.*//'
 	done
 }
+
+aurpkg_info() {
+	pkg_info=$(wget -q -O - https://aur.archlinux.org/packages/$PKG/ | grep "<th>Description" -A 1 | grep "</td>" | sed "s/<\/.*//" | sed 's/.*>//')
+	echo $pkg_info;
+};
+
 # The scripty part
 if [[ ${1} != "" ]]; then
 	while [[ $# -ge 1 ]]; do
@@ -227,6 +234,19 @@ if [[ ${1} != "" ]]; then
 				else
 					PKG=${1};
 					aurpkg_search;
+				fi;;
+
+			"-i" | "--info")
+			shift
+				if [[ ${1} == "" ]]; then
+					echo "Fatal: No package specified";
+					exit 1;
+				else
+					while [[ $# -ge 1 ]]; do
+						PKG="${1}";
+						aurpkg_info;
+					shift
+					done
 				fi;;
 
 			# If no command matches
