@@ -34,7 +34,7 @@ aurpkg_help() {
 	echo "    -s | --search <query>	look for a package";
 	echo "    -S | --sync <pkg>		install a package";
 	echo "    -U | --update <pkg>		update a package";
-	echo "    -a | --version		display version";
+	echo "    -v | --version | --about	display version";
 };
 
 aurpkg_version() {
@@ -176,7 +176,7 @@ if [[ ${1} != "" ]]; then
 				aurpkg_help;;
 				
 			# Version infos
-			"--version" | "--about" | "-a")
+			"--version" | "--about" | "-v")
 			shift
 				aurpkg_version;;
 
