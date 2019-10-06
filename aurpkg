@@ -55,7 +55,7 @@ aurpkg_install() {
 	mkdir /tmp/build;
 	cd /tmp/build;
 	# Clone the repository
-	git clone https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
+	git clone --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
 	# Try with pacman if the AUR repo is empty
 	if [[ $(ls /tmp/build/$PKG) == "" ]]; then
 		echo "$PKG not found in AUR repositories, trying as official package";
@@ -115,7 +115,7 @@ updating_function() {
 	mkdir /tmp/build;
 	cd /tmp/build;
 	# Clone the repository
-	git clone https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
+	git clone --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
 	cd /tmp/build/${PKG};
 	# Build the package
 	makepkg -s;
