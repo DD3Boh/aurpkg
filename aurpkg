@@ -49,8 +49,6 @@ aurpkg_version() {
 };
 
 aurpkg_install() {
-	# Clean the old build directory if present
-	rm -rf /tmp/build;
 	# Create the build directory
 	mkdir /tmp/build;
 	cd /tmp/build;
@@ -162,6 +160,19 @@ aurpkg_update() {
 	fi;
 };
 
+# Cleanup
+aurpkg_cleanup() {
+	# Temp folder cleanup
+	rm -rf /tmp/build;
+
+	# List cleanup
+	while read package; do
+		if [[ $(pacman -T $package) == "$package" ]]; then
+			sed -i /$package/d ~/.aurpkg_list;
+		fi;
+	done < ~/.aurpkg_list
+};
+
 aurpkg_search() {
 	# Search for keyword on AUR and list result
 
@@ -189,6 +200,9 @@ aurpkg_info() {
 		echo $pkg_info;
 	fi;
 };
+
+# Cleanup first
+aurpkg_cleanup
 
 # The scripty part
 if [[ ${1} != "" ]]; then
