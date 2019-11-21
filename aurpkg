@@ -145,7 +145,7 @@ aurpkg_update() {
 	# export the first argument received by the function as PKG
 	PKG="${1}"
 	# check the local package version
-	local_package_version=$(pacman -Q $PKG | sed "s/$PKG //" | sed 's/-1//')
+	local_package_version=$(pacman -Q $PKG | sed "s/$PKG //" | sed 's/..$//')
 	# check the remote package version
 	remote_package_version=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=$PKG | grep pkgver= | sed 's/pkgver=//')
 	if [[ $(echo $remote_package_version | grep "\$") != "" ]]; then
