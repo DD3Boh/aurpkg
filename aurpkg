@@ -148,6 +148,14 @@ aurpkg_update() {
 	local_package_version=$(pacman -Q $PKG | sed "s/$PKG //" | sed 's/-1//')
 	# check the remote package version
 	remote_package_version=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=$PKG | grep pkgver= | sed 's/pkgver=//')
+	if [[ $(echo $remote_package_version | grep "\$") != "" ]]; then
+		external_variable=$(echo $remote_package_version | sed 's|.*\$||g')
+		prefix=$(echo $remote_package_version | sed 's|\$.*||g')
+		external_version=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=$PKG | grep $external_variable= | sed s/$external_variable=//g)
+		old_package_version=$remote_package_version
+		remote_package_version=$prefix$external_version
+	fi;
+
 	# Check if the versions are the same, if not check the git package
 	if [[ $remote_package_version != $local_package_version ]]; then
 		remote_package_version=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=$PKG\-git | grep pkgver= | sed 's/pkgver=//')
