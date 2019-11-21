@@ -33,7 +33,7 @@ aurpkg_help() {
 	echo "    -R | --remove <pkg>		remove a package";
 	echo "    -s | --search <query>	look for a package";
 	echo "    -S | --sync <pkg>		install a package";
-	echo "    -U | --update <pkg>		update a package";
+	echo "    -U | --update <pkg|ALL>		update a package";
 	echo "    -v | --version | --about	display version";
 };
 
@@ -127,7 +127,25 @@ updating_function() {
 	rm -rf /tmp/build;
 };
 
+aurpkg_full_update() {
+	echo "Updating all the aur packages..."
+	echo "The following packages are going to be updated:"
+	cat ~/.aurpkg_list | tr "\n" " "
+	echo ""
+	echo "Do you want to update? (Y/n)"
+	read -s -n 1 REPLY0;
+	if [[ $REPLY0 = "Y" ]] || [[ $REPLY0 = "y" ]] || [[ $REPLY0 = "" ]]; then
+		while read list; do
+			aurpkg_update $list
+		done < ~/.aurpkg_list
+	else
+		echo "Operation canceled"
+	fi;
+};
+
 aurpkg_update() {
+	# export the first argument received by the function as PKG
+	PKG="${1}"
 	# check the local package version
 	local_package_version=$(pacman -Q $PKG | sed "s/$PKG //" | sed 's/-1//')
 	# check the remote package version
@@ -223,10 +241,11 @@ if [[ ${1} != "" ]]; then
 				if [[ ${1} == "" ]]; then
 					echo "Fatal: No package specified";
 					exit 1;
+				elif [[ ${1} == "ALL" ]]; then
+					aurpkg_full_update;
 				else
 					while [[ $# -ge 1 ]]; do
-						PKG="${1}";
-						aurpkg_update;
+						aurpkg_update "${1}";
 					shift
 					done
 				fi;;
