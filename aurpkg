@@ -84,9 +84,6 @@ aurpkg_install() {
 			# Install the package
 			sudo pacman -U $(ls | grep '.tar.xz') --noconfirm;
 			# Log the package
-			if [[ ! -f ~/.aurpkg_list ]]; then
-				touch ~/.aurpkg_list;
-			fi;
 			if [[ $(grep -r ${PKG} ~/.aurpkg_list) == "" ]] && [[ $(pacman -T ${PKG}) == "" ]]; then
 				echo ${PKG} >> ~/.aurpkg_list;
 			fi;
@@ -172,6 +169,11 @@ aurpkg_update() {
 aurpkg_cleanup() {
 	# Temp folder cleanup
 	rm -rf /tmp/build;
+
+	# Create .aurpkg_list if not present
+	if [[ ! -f ~/.aurpkg_list ]]; then
+		touch ~/.aurpkg_list;
+	fi;
 
 	# List cleanup
 	while read package; do
