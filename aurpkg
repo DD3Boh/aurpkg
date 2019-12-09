@@ -52,15 +52,15 @@ aurpkg_install() {
 	# Create the build directory
 	mkdir /tmp/build;
 	cd /tmp/build;
-	# Clone the repository
-	git clone --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
-	# Try with pacman if the AUR repo is empty
-	if [[ $(ls /tmp/build/$PKG) == "" ]]; then
-		echo "$PKG not found in AUR repositories, trying as official package";
+	# Check if the repo exists
+	if [[ ! -z $(curl -s https://aur.archlinux.org/packages/$PKG | grep 404) ]]; then
+		echo "Package '$PKG' not found in AUR repositories, retrying as official package";
 		sudo pacman -S $PKG;
 		rm -rf /tmp/build;
 		exit 1;
 	else
+		# Clone the repository
+		git clone --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
 		cd /tmp/build/${PKG};
 
 		# Choose if seeing the PKGBUILD
