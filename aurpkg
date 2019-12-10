@@ -51,9 +51,6 @@ aurpkg_version() {
 aurpkg_install() {
 	# export the first argument received by the function as PKG
 	PKG="${1}"
-	# Create the build directory
-	mkdir /tmp/build;
-	cd /tmp/build;
 	# Check if the repo exists
 	if [[ ! -z $(curl -s https://aur.archlinux.org/packages/$PKG | grep 404) ]]; then
 		echo "Package '$PKG' not found in AUR repositories";
@@ -64,6 +61,10 @@ aurpkg_install() {
 			echo "Try with 'aurpkg -s $PKG'"
 		fi;
 	else
+		# Create the build directory
+		mkdir /tmp/build;
+		cd /tmp/build;
+
 		# Clone the repository
 		git clone --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
 		cd /tmp/build/${PKG};
@@ -92,13 +93,14 @@ aurpkg_install() {
 			if [[ $(grep -r ${PKG} ~/.aurpkg_list) == "" ]] && [[ $(pacman -T ${PKG}) == "" ]]; then
 				echo ${PKG} >> ~/.aurpkg_list;
 			fi;
+
+			# Remove the build directory
+			cd $initial_dir;
+			rm -rf /tmp/build;
 		else
 			echo "Operation canceled";
 		fi;
 	fi;
-	# Remove the build directory
-	cd $initial_dir;
-	rm -rf /tmp/build;
 };
 
 aurpkg_uninstall() {
