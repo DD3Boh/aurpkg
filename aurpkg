@@ -195,7 +195,7 @@ aurpkg_search() {
 		current_page_old=$current_page
 		package_number=$(( ($current_page - 1) * 250))
 		current_page=$((current_page_old + 1))
-		curl -s "https://aur.archlinux.org/packages/?K=$PKG&PP=250&O=$package_number" | grep '<td><a href="/packages/' | sed 's/<td><a href=\"\/packages//'| sed -n 's/\//&\n/;s/.*\n//p' | sed 's/\/.*//'
+		curl -s -N "https://aur.archlinux.org/packages/?K=$PKG&PP=250&O=$package_number" | grep '<td><a href="/packages/' | sed 's/<td><a href=\"\/packages//'| sed -n 's/\//&\n/;s/.*\n//p' | sed 's/\/.*//'
 	done
 }
 
