@@ -155,10 +155,6 @@ aurpkg_update() {
 		remote_package_version=$prefix$external_version
 	fi;
 
-	# Check if the versions are the same, if not check the git package
-	if [[ $remote_package_version != $local_package_version ]]; then
-		remote_package_version=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=$PKG\-git | grep pkgver= | sed 's/pkgver=//')
-	fi;
 	# If the package version is different update the package
 	if [[ $remote_package_version != $local_package_version ]]; then
 		updating_function;
