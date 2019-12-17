@@ -61,13 +61,9 @@ aurpkg_install() {
 			echo "Try with 'aurpkg -s $PKG'"
 		fi;
 	else
-		# Create the build directory
+		# Clone the package
 		mkdir /tmp/build;
-		cd /tmp/build;
-
-		# Clone the repository
 		git clone --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
-		cd /tmp/build/${PKG};
 
 		# Choose if seeing the PKGBUILD
 		echo "View the PKGBUILD? (Y/n)";
@@ -75,16 +71,21 @@ aurpkg_install() {
 		if [[ $REPLY0 = "Y" ]] || [[ $REPLY0 = "y" ]] || [[ $REPLY0 = "" ]]; then
 			# open the PKGBUILD with a text editor
 			if [[ $EDITOR == "" ]]; then
-				vi ./PKGBUILD;
+				vi /tmp/build/${PKG}/PKGBUILD;
 			else
-				$EDITOR ./PKGBUILD;
+				$EDITOR /tmp/build/${PKG}/PKGBUILD;
 			fi;
 		fi;
 		# Choose to install or not
 		echo "Continue? (Y/n)";
 		read -s -n 1 REPLY1;
 		if [[ $REPLY1 = "Y" ]] || [[ $REPLY1 = "y" ]] || [[ $REPLY1 = "" ]]; then
+			# Install the AUR dependencies
+			deps=$(grep -r "depends" /tmp/build/${PKG}/PKGBUILD | grep 'makedepends\|optdepends' -v | sed 's|depends=(||g;s|)||g');
+			install_deps ${deps};
+
 			# Build the package
+			cd /tmp/build/${PKG};
 			makepkg -s;
 			echo "";
 			# Install the package
@@ -99,6 +100,62 @@ aurpkg_install() {
 			rm -rf /tmp/build;
 		else
 			echo "Operation canceled";
+		fi;
+	fi;
+};
+
+install_deps() {
+	while [[ $# -ge 1 ]]; do
+		depPKG="${1}";
+		aurpkg_deps;
+	shift
+	done
+};
+
+aurpkg_deps() {
+	# Check if the package is already installed first
+	if [[ -z $(pacman -T $depPKG) ]]; then
+		echo "Dependency '$depPKG' already installed"
+	else
+		# Only install AUR packages, official packages can be handled by pacman itself
+		if [[ -z $(pacman -Si $depPKG) ]]; then
+			echo "Dependency '$depPKG' not found in official packages"
+			echo "Retrying as AUR..."
+
+			# Create the build directory
+			mkdir /tmp/deps;
+			cd /tmp/deps;
+
+			# Clone the repository
+			git clone --depth=1 https://aur.archlinux.org/${depPKG}.git /tmp/deps/${depPKG};
+			cd /tmp/deps/${depPKG};
+			echo "Installing dependency '$depPKG' from AUR"
+
+			# Choose if seeing the PKGBUILD
+			echo "View the PKGBUILD? (Y/n)";
+			read -s -n 1 REPLY0;
+			if [[ $REPLY0 = "Y" ]] || [[ $REPLY0 = "y" ]] || [[ $REPLY0 = "" ]]; then
+				# open the PKGBUILD with a text editor
+				if [[ $EDITOR == "" ]]; then
+				vi ./PKGBUILD;
+				else
+					$EDITOR ./PKGBUILD;
+				fi;
+			fi;
+
+			# Build the package
+			makepkg -s;
+			echo "";
+			# Install the package
+			sudo pacman -U $(ls | grep '.tar.xz') --noconfirm;
+			# Log the package
+			if [[ $(grep -r ${depPKG} ~/.aurpkg_list) == "" ]] && [[ $(pacman -T ${depPKG}) == "" ]]; then
+				echo ${depPKG} >> ~/.aurpkg_list;
+			fi;
+
+			# Remove the build directory
+			cd $initial_dir;
+			rm -rf /tmp/deps;
 		fi;
 	fi;
 };
@@ -174,6 +231,7 @@ aurpkg_update() {
 aurpkg_cleanup() {
 	# Temp folder cleanup
 	rm -rf /tmp/build;
+	rm -rf /tmp/deps;
 
 	# Create .aurpkg_list if not present
 	if [[ ! -f ~/.aurpkg_list ]]; then
