@@ -49,8 +49,13 @@ aurpkg_version() {
 };
 
 aurpkg_install() {
-	# export the first argument received by the function as PKG
-	PKG="${1}"
+	# export the first argument received by the function as PKG but make sure it contains no "/"
+	if [[ ! -z $(echo ${1} | grep "\/") ]]; then
+		PKG=$(echo ${1} | sed 's|.*/||')
+	else
+		PKG=${1}
+	fi;
+
 	# Check if the repo exists
 	if [[ ! -z $(curl -s https://aur.archlinux.org/packages/$PKG | grep 404) ]]; then
 		echo "Package '$PKG' not found in AUR repositories";
