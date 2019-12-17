@@ -208,7 +208,7 @@ aurpkg_update() {
 	# export the first argument received by the function as PKG
 	PKG="${1}"
 	# check the local package version
-	local_package_version=$(pacman -Q $PKG | sed "s/$PKG //" | sed 's/..$//')
+	local_package_version=$(pacman -Q $PKG | sed "s/$PKG //;s/..$//")
 	# check the remote package version
 	remote_package_version=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=$PKG | grep pkgver= | sed 's/pkgver=//')
 	if [[ ! -z $(echo $remote_package_version | grep '\$') ]]; then
@@ -250,22 +250,25 @@ aurpkg_search() {
 	# Search for keyword on AUR and list result
 
 	# Total pages of list for the package searched
-	total_pages=$(curl -s "https://aur.archlinux.org/packages/?K=$PKG&PP=250" | grep 'packages found' -m 1 | sed 's/.*packages found.*Page //' | sed 's/\..*//' | sed 's/.*of //')
+	total_pages=$(curl -s "https://aur.archlinux.org/packages/?K=$PKG&PP=250" | grep 'packages found' -m 1 | sed 's/.*packages found.*Page //;s/\..*//;s/.*of //')
 
 	# The current page we are at
-	current_page=$(curl -s "https://aur.archlinux.org/packages/?K=$PKG&PP=250" | grep 'packages found' -m 1 | sed 's/.*packages found.*Page //' | sed 's/\..*//' | sed 's/ of.*//')
+	current_page=$(curl -s "https://aur.archlinux.org/packages/?K=$PKG&PP=250" | grep 'packages found' -m 1 | sed 's/.*packages found.*Page //;s/\..*//;s/ of.*//')
 
 	# Script to search for new pages in case there is any
 	until [[ $current_page == $(($total_pages + 1)) ]]; do
 		current_page_old=$current_page
 		package_number=$(( ($current_page - 1) * 250))
 		current_page=$((current_page_old + 1))
-		curl -s -N "https://aur.archlinux.org/packages/?K=$PKG&PP=250&O=$package_number" | grep '<td><a href="/packages/' | sed 's/<td><a href=\"\/packages//'| sed -n 's/\//&\n/;s/.*\n//p' | sed 's/\/.*//'
+		curl -s -N "https://aur.archlinux.org/packages/?K=$PKG&PP=250&O=$package_number" | grep '<td><a href="/packages/\|<td class="wrap">' | sed 's|<td><a href=\"/packages/||;s|.*<td class="wrap">|    |;s|</.*||;s|.*>|aur/|g;'
 	done
+
+	# Also search in official packages
+	pacman -Ss $PKG
 }
 
 aurpkg_info() {
-	pkg_info=$(curl -s https://aur.archlinux.org/packages/$PKG/ | grep "<th>Description" -A 1 | grep "</td>" | sed "s/<\/.*//" | sed 's/.*>//')
+	pkg_info=$(curl -s https://aur.archlinux.org/packages/$PKG/ | grep "<th>Description" -A 1 | grep "</td>" | sed "s/<\/.*//;s/.*>//")
 	if [[ $pkg_info == "" ]]; then
 		echo "Invalid package!";
 		echo "Use aurpkg -s <query> to search for packages";
