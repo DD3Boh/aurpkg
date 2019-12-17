@@ -2,11 +2,17 @@
 A simple and light automated installer for AUR packages.<br>
 <br>
 ### Installing / Updating
-Execute the following commands as root:<br>
-`curl -o /bin/aurpkg https://raw.githubusercontent.com/DD3Boh/aurpkg/master/aurpkg`<br>
-`chmod +x /bin/aurpkg` <br>
+aurpkg can now be easily installed from AUR:<br>
+```
+# git clone --depth=1 https://aur.archlinux.org/aurpkg.git
+# cd aurpkg
+# makepkg -s
+# pacman -U $(ls | grep '.tar.xz')
+```
 ### Uninstalling
-Execute the following command as root:<br>
-`rm /bin/aurpkg` <br>
+To uninstall aurpkg you can use pacman just like with any other package:<br>
+```
+# pacman -R aurpkg
+```
 <br>
 Type `aurpkg -h` to get help.
