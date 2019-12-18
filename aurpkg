@@ -57,7 +57,7 @@ aurpkg_install() {
 	fi;
 
 	# Check if the repo exists
-	if [[ ! -z $(curl -s https://aur.archlinux.org/packages/$PKG | grep 404) ]]; then
+	if [[ ! -z $(curl -s https://aur.archlinux.org/packages/$PKG | grep "404 - Page Not Found") ]]; then
 		echo "Package '$PKG' not found in AUR repositories";
 		if [[ ! -z $(pacman -Si $PKG) ]]; then
 			sudo pacman -S $PKG;
