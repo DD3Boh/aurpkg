@@ -94,7 +94,7 @@ aurpkg_install() {
 			makepkg -s;
 			echo "";
 			# Install the package
-			sudo pacman -U $(ls | grep '.tar.xz') --noconfirm;
+			sudo pacman -U $(ls | grep '.pkg.tar.xz') --noconfirm;
 			# Log the package
 			if [[ $(grep -r ${PKG} ~/.aurpkg_list) == "" ]] && [[ $(pacman -T ${PKG}) == "" ]]; then
 				echo ${PKG} >> ~/.aurpkg_list;
@@ -152,7 +152,7 @@ aurpkg_deps() {
 			makepkg -s;
 			echo "";
 			# Install the package
-			sudo pacman -U $(ls | grep '.tar.xz') --noconfirm;
+			sudo pacman -U $(ls | grep '.pkg.tar.xz') --noconfirm;
 			# Log the package
 			if [[ $(grep -r ${depPKG} ~/.aurpkg_list) == "" ]] && [[ $(pacman -T ${depPKG}) == "" ]]; then
 				echo ${depPKG} >> ~/.aurpkg_list;
@@ -187,7 +187,7 @@ updating_function() {
 	makepkg -s;
 	echo "";
 	# Update the package
-	sudo pacman -U $(ls | grep '.tar.xz') --noconfirm;
+	sudo pacman -U $(ls | grep '.pkg.tar.xz') --noconfirm;
 	# Remove the build directory
 	cd $initial_dir;
 	rm -rf /tmp/build;
