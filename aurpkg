@@ -295,7 +295,7 @@ if [[ ${1} != "" ]]; then
 			"-h" | "--help")
 			shift
 				aurpkg_help;;
-				
+
 			# Version infos
 			"--version" | "--about" | "-v")
 			shift
@@ -317,7 +317,6 @@ if [[ ${1} != "" ]]; then
 			# Uninstall/remove
 			"-R" | "--remove" | "--uninstall")
 			shift
-
 				if [[ ${1} == "" ]]; then
 					echo "Fatal: No package specified";
 					exit 1;
@@ -331,7 +330,6 @@ if [[ ${1} != "" ]]; then
 			# Update
 			"-U" | "--update" | "--upgrade")
 			shift
-
 				if [[ ${1} == "" ]]; then
 					echo "Fatal: No package specified";
 					exit 1;
@@ -347,7 +345,6 @@ if [[ ${1} != "" ]]; then
 			# Search
 			"-Ss" | "-s" | "--search")
 			shift
-			
 				if [[ ${1} == "" ]]; then
 					echo "No query specified";
 					exit 1;
