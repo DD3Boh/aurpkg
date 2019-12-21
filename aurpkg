@@ -86,7 +86,7 @@ aurpkg_install() {
 		read -s -n 1 REPLY1;
 		if [[ $REPLY1 = "Y" ]] || [[ $REPLY1 = "y" ]] || [[ $REPLY1 = "" ]]; then
 			# Install the AUR dependencies
-			deps=$(grep -r "depends" /tmp/build/${PKG}/PKGBUILD | grep 'makedepends\|optdepends' -v | sed 's|depends=(||g;s|)||g' | tr "\'" " ");
+			deps="$(source "/tmp/build/${PKG}/PKGBUILD" ; echo "${depends[@]}")"
 			install_deps ${deps};
 
 			# Build the package
