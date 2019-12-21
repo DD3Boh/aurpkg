@@ -23,28 +23,29 @@ fi;
 initial_dir=$(pwd);
 version=1.2.5;
 
-# Functions
 aurpkg_help() {
-	echo "usage: aurpkg [operation] <package>"
-	echo "operations:";
-	echo "    -h | --help			show this help";
-	echo "    -i | --info			search the info for a package";
-	echo "    -R | --remove <pkg>		remove a package";
-	echo "    -s | --search <query>	look for a package";
-	echo "    -S | --sync <pkg>		install a package";
-	echo "    -U | --update <pkg|ALL>	update a package";
-	echo "    -v | --version | --about	display version";
+	cat << EOF
+usage: aurpkg [operation] <package>
+operations:
+    -h | --help			show this help
+    -i | --info			search the info for a package
+    -R | --remove <pkg>		remove a package
+    -s | --search <query>	look for a package
+    -S | --sync <pkg>		install a package
+    -U | --update <pkg|ALL>	update a package
+    -v | --version | --about	display version
+EOF
 };
 
 aurpkg_version() {
-    echo "    aurpkg v${version}";
-    echo "    Copyright (C) 2018 gstux";
-    echo "    Copyright (C) 2018-2019 Davide Garberi";
-    echo "";
-    echo "    This program may be freely redistributed under";
-    echo "    the terms of the GNU General Public License.";
-    echo "";
-    echo "    https://github.com/DD3Boh/aurpkg";
+	cat << EOF
+    aurpkg v${version}
+    Copyright (C) 2018 gstux
+    Copyright (C) 2018-2019 Davide Garberi
+    This program may be freely redistributed under
+    the terms of the GNU General Public License.
+    https://github.com/DD3Boh/aurpkg
+EOF
 };
 
 aurpkg_install() {
