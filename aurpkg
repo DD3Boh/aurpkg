@@ -98,8 +98,16 @@ aurpkg_install() {
 			# Install the package
 			sudo pacman -U $(ls | grep '.pkg.tar.xz') --noconfirm;
 			# Log the package
-			if [[ $(grep -r ${PKG} ~/.aurpkg_list) == "" ]] && [[ $(pacman -T ${PKG}) == "" ]]; then
-				echo ${PKG} >> ~/.aurpkg_list;
+			if [[ -z $(echo $PKG | grep "\-git") ]]; then
+				pkgline="${PKG} ($(source "/tmp/build/${PKG}/PKGBUILD"; echo "${pkgver[@]}"))"
+			else
+				cd src/$PKG
+				pkgline="${PKG} ($(git rev-parse HEAD | cut -c1-8))"
+			fi;
+
+			if [[ $(pacman -T ${PKG}) == "" ]]; then
+				sed -i /$PKG.*/d ~/.aurpkg_list;
+				echo ${pkgline} >> ~/.aurpkg_list;
 			fi;
 
 			# Remove the build directory
@@ -152,8 +160,16 @@ aurpkg_deps() {
 			# Install the package
 			sudo pacman -U $(ls | grep '.pkg.tar.xz') --noconfirm;
 			# Log the package
-			if [[ $(grep -r ${depPKG} ~/.aurpkg_list) == "" ]] && [[ $(pacman -T ${depPKG}) == "" ]]; then
-				echo ${depPKG} >> ~/.aurpkg_list;
+			if [[ -z $(echo $depPKG | grep "\-git") ]]; then
+				pkgline="${depPKG} ($(source "/tmp/build/${depPKG}/PKGBUILD"; echo "${pkgver[@]}"))"
+			else
+				cd src/$depPKG
+				pkgline="${depPKG} ($(git rev-parse HEAD | cut -c1-8))"
+			fi;
+
+			if [[ $(pacman -T ${depPKG}) == "" ]]; then
+				sed -i /$depPKG.*/d ~/.aurpkg_list;
+				echo ${pkgline} >> ~/.aurpkg_list;
 			fi;
 
 			# Remove the build directory
@@ -169,22 +185,22 @@ aurpkg_uninstall() {
 	sudo pacman -R $PKG;
 	# Remove the package from the packages list
 	if [[ $(pacman -T ${PKG}) == ${PKG} ]]; then
-		sed -i /$PKG/d ~/.aurpkg_list;
+		sed -i /$PKG.*/d ~/.aurpkg_list;
 	fi;
 };
 
 updating_function() {
-	# Create the build directory
-	mkdir /tmp/build;
-	cd /tmp/build;
 	# Clone the repository
-	git clone --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
+	pkgline="$PKG ($remote_package_version)"
 	cd /tmp/build/${PKG};
 	# Build the package
 	makepkg -s;
 	echo "";
 	# Update the package
 	sudo pacman -U $(ls | grep '.pkg.tar.xz') --noconfirm;
+	# Update version entry in PKG list
+	sed -i /$PKG.*/d ~/.aurpkg_list;
+	echo ${pkgline} >> ~/.aurpkg_list;
 	# Remove the build directory
 	cd $initial_dir;
 	rm -rf /tmp/build;
@@ -193,13 +209,13 @@ updating_function() {
 aurpkg_full_update() {
 	echo "Updating all the aur packages..."
 	echo "The following packages are going to be updated:"
-	cat ~/.aurpkg_list | tr "\n" " "
+	cat ~/.aurpkg_list | sed 's/ (.*)//g' | tr "\n" " "
 	echo ""
 	echo "Do you want to update? (Y/n)"
 	read -s -n 1 REPLY0;
 	if [[ $REPLY0 = "Y" ]] || [[ $REPLY0 = "y" ]] || [[ $REPLY0 = "" ]]; then
 		while read list; do
-			aurpkg_update $list
+			aurpkg_update $(echo $list | sed 's/(.*)//g')
 		done < ~/.aurpkg_list
 	else
 		echo "Operation canceled"
@@ -210,22 +226,23 @@ aurpkg_update() {
 	# export the first argument received by the function as PKG
 	PKG="${1}"
 	# check the local package version
-	local_package_version=$(pacman -Q $PKG | sed "s/$PKG //;s/..$//")
+	local_package_version=$(grep $PKG ~/.aurpkg_list | sed 's/.*(//;s/)//')
+	git clone -q --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
+
 	# check the remote package version
-	remote_package_version=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=$PKG | grep pkgver= | sed 's/pkgver=//')
-	if [[ ! -z $(echo $remote_package_version | grep '\$') ]]; then
-		external_variable=$(echo $remote_package_version | sed 's|.*\$||g')
-		prefix=$(echo $remote_package_version | sed 's|\$.*||g')
-		external_version=$(curl -s https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=$PKG | grep $external_variable= | sed s/$external_variable=//g)
-		old_package_version=$remote_package_version
-		remote_package_version=$prefix$external_version
-	fi;
+	if [[ -z $(echo $PKG | grep "\-git") ]]; then
+		remote_package_version=$(source /tmp/build/${PKG}/PKGBUILD; echo "${pkgver[@]}")
+	else
+		repo=$(source /tmp/build/${PKG}/PKGBUILD; echo "${source[@]}" | sed 's|.*//|https://|')
+		remote_package_version=$(git ls-remote $repo HEAD | cut -c1-8)
+	fi
 
 	# If the package version is different update the package
 	if [[ $remote_package_version != $local_package_version ]]; then
 		updating_function;
 	else
 		echo "The package $PKG is already up to date";
+		rm -rf /tmp/build;
 	fi;
 };
 
@@ -242,7 +259,7 @@ aurpkg_cleanup() {
 	# List cleanup
 	while read package; do
 		if [[ $(pacman -T $package) == "$package" ]]; then
-			sed -i /$package/d ~/.aurpkg_list;
+			sed -i /$package.*/d ~/.aurpkg_list;
 		fi;
 	done < ~/.aurpkg_list
 };
