@@ -127,13 +127,9 @@ aurpkg_deps() {
 			echo "Dependency '$depPKG' not found in official packages"
 			echo "Retrying as AUR..."
 
-			# Create the build directory
-			mkdir /tmp/deps;
-			cd /tmp/deps;
-
 			# Clone the repository
-			git clone --depth=1 https://aur.archlinux.org/${depPKG}.git /tmp/deps/${depPKG};
-			cd /tmp/deps/${depPKG};
+			git clone --depth=1 https://aur.archlinux.org/${depPKG}.git /tmp/build/${depPKG};
+			cd /tmp/build/${depPKG};
 			echo "Installing dependency '$depPKG' from AUR"
 
 			# Choose if seeing the PKGBUILD
@@ -160,7 +156,6 @@ aurpkg_deps() {
 
 			# Remove the build directory
 			cd $initial_dir;
-			rm -rf /tmp/deps;
 		fi;
 	fi;
 };
@@ -236,7 +231,6 @@ aurpkg_update() {
 aurpkg_cleanup() {
 	# Temp folder cleanup
 	rm -rf /tmp/build;
-	rm -rf /tmp/deps;
 
 	# Create .aurpkg_list if not present
 	if [[ ! -f ~/.aurpkg_list ]]; then
