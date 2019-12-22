@@ -87,6 +87,8 @@ aurpkg_install() {
 		if [[ $REPLY1 = "Y" ]] || [[ $REPLY1 = "y" ]] || [[ $REPLY1 = "" ]]; then
 			# Install the AUR dependencies
 			deps="$(source "/tmp/build/${PKG}/PKGBUILD" ; echo "${depends[@]}")"
+			makedeps="$(source "/tmp/build/${PKG}/PKGBUILD" ; echo "${makedepends[@]}")"
+			deps="$deps $makedeps"
 			install_deps ${deps};
 
 			# Build the package
