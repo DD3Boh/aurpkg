@@ -258,9 +258,8 @@ aurpkg_search() {
 
 	# Script to search for new pages in case there is any
 	until [[ $current_page == $(($total_pages + 1)) ]]; do
-		current_page_old=$current_page
 		package_number=$(( ($current_page - 1) * 250))
-		current_page=$((current_page_old + 1))
+		current_page=$((current_page + 1))
 		curl -s -N "https://aur.archlinux.org/packages/?K=$PKG&PP=250&O=$package_number" | grep '<td><a href="/packages/\|<td class="wrap">' | sed 's|<td><a href=\"/packages/||;s|.*<td class="wrap">|    |;s|</.*||;s|.*>|aur/|g;'
 	done
 
