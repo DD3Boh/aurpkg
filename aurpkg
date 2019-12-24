@@ -269,12 +269,25 @@ aurpkg_search() {
 }
 
 aurpkg_info() {
-	pkg_info=$(curl -s https://aur.archlinux.org/packages/$PKG/ | grep "<th>Description" -A 1 | grep "</td>" | sed "s/<\/.*//;s/.*>//")
-	if [[ $pkg_info == "" ]]; then
+	# export the first argument received by the function as PKG but make sure it contains no "/"
+	if [[ ! -z $(echo ${1} | grep "\/") ]]; then
+		PKG=$(echo ${1} | sed 's|.*/||')
+	else
+		PKG=${1}
+	fi;
+
+	if [[ ! -z $(curl -s https://aur.archlinux.org/packages/$PKG | grep "404 - Page Not Found") ]]; then
+		pkg_info=$(pacman -Si $PKG | grep Description | sed 's/.*: //g')
+	else
+		pkg_info=$(curl -s https://aur.archlinux.org/packages/$PKG/ | grep "<th>Description" -A 1 | grep "</td>" | sed "s/<\/.*//;s/.*>//")
+	fi;
+
+	if [[ -z $pkg_info ]]; then
 		echo "Invalid package!";
 		echo "Use aurpkg -s <query> to search for packages";
 	else
-		echo $pkg_info;
+		echo "${1}"
+		echo "    $pkg_info";
 	fi;
 };
 
@@ -356,8 +369,7 @@ aurpkg_functions() {
 						exit 1;
 					else
 						while [[ $# -ge 1 ]]; do
-							PKG="${1}";
-							aurpkg_info;
+							aurpkg_info "${1}";
 						shift
 						done
 					fi;;
