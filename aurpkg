@@ -375,25 +375,20 @@ aurpkg_functions() {
 # Cleanup first
 aurpkg_cleanup
 
-commandsnum=$(echo $* | grep -o '\-\|\--' | wc -l)
 totalwords=$(echo $* | wc -w)
 
-if [[ $commandsnum -gt "1" ]]; then
-	for input in $@; do
-		if [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ -z "${command}" ]]; then
-			command="$input"
-		elif [[ "${input}" != -* ]] && [[ "${input}" != --* ]]; then
-			command="$command $input"
-		elif [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ ! -z "${command}" ]]; then
-			aurpkg_functions $command
-			unset command;
-			command=$input;
-		fi;
+for input in $@; do
+	if [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ -z "${command}" ]]; then
+		command="$input"
+	elif [[ "${input}" != -* ]] && [[ "${input}" != --* ]]; then
+		command="$command $input"
+	elif [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ ! -z "${command}" ]]; then
+		aurpkg_functions $command
+		unset command;
+		command=$input;
+	fi;
 
-		if [[ ${!totalwords} == $input ]]; then
-			aurpkg_functions $command
-		fi;
-	done
-else
-	aurpkg_functions "${@}"
-fi;
+	if [[ ${!totalwords} == $input ]]; then
+		aurpkg_functions $command
+	fi;
+done
