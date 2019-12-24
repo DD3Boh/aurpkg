@@ -248,6 +248,7 @@ aurpkg_cleanup() {
 };
 
 aurpkg_search() {
+	PKG=${1};
 	# Search for keyword on AUR and list result
 
 	# Total pages of list for the package searched
@@ -342,10 +343,11 @@ aurpkg_functions() {
 						echo "No query specified";
 						exit 1;
 					else
-						PKG=${1};
-						aurpkg_search;
-					fi
-				shift;;
+						while [[ $# -ge 1 ]]; do
+							aurpkg_search "${1}";
+						shift
+						done
+					fi;;
 
 				"-i" | "--info")
 				shift
