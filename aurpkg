@@ -28,19 +28,20 @@ version=1.2.5;
 aurpkg_help() {
 	echo "usage: aurpkg [operation] <package>"
 	echo "operations:";
-	echo "    -h | --help			show this help";
-	echo "    -i | --info			search the info for a package";
-	echo "    -R | --remove <pkg>		remove a package";
-	echo "    -s | --search <query>	look for a package";
-	echo "    -S | --sync <pkg>		install a package";
-	echo "    -U | --update <pkg|ALL>	update a package";
-	echo "    -v | --version | --about	display version";
+	echo "    -h | --help					show this help";
+	echo "    -i | --info					search the info for a package";
+	echo "    -R | --remove <pkg1> <pkg2>...		remove a package/multiple packages";
+	echo "    -s | --search <query>			look for a package";
+	echo "    -S | --sync <pkg1> <pkg2>...		install a package/multiple packages";
+	echo "    -U | --update <pkg1|ALL> <pkg2>...		update a package/multiple packages";
+	echo "    -v | --version | --about			display version";
 };
 
 aurpkg_version() {
     echo "    aurpkg v${version}";
     echo "    Copyright (C) 2018 gstux";
     echo "    Copyright (C) 2018-2019 Davide Garberi";
+    echo "    Copyright (C) 2019 Jago Gardiner (nysascape)"
     echo "";
     echo "    This program may be freely redistributed under";
     echo "    the terms of the GNU General Public License.";
@@ -303,10 +304,15 @@ if [[ ${1} != "" ]]; then
 		"-S" | "--sync" | "--install")
 		shift
 			if [[ ${1} == "" ]]; then
-				echo "Fatal: No package specified";
+				echo "Fatal: No package(s) specified";
 				exit 1;
+			elif [[ $# != 1 ]]; then
+				for i in $@; do
+					aurpkg_install "$i"
+				done
 			else
 				while [[ $# -ge 1 ]]; do
+					echo "Installing package $i..."
 					aurpkg_install "${1}";
 				shift
 				done
@@ -317,8 +323,13 @@ if [[ ${1} != "" ]]; then
 		shift
 
 			if [[ ${1} == "" ]]; then
-				echo "Fatal: No package specified";
+				echo "Fatal: No package(s) specified";
 				exit 1;
+			elif [[ $# != 1 ]]; then
+				for i in $@; do
+					echo "Uninstalling package $i..."
+					aurpkg_uninstall "$i"
+				done
 			else
 				while [[ $# -ge 1 ]]; do
 					aurpkg_uninstall "${1}";
@@ -331,10 +342,15 @@ if [[ ${1} != "" ]]; then
 		shift
 
 			if [[ ${1} == "" ]]; then
-				echo "Fatal: No package specified";
+				echo "Fatal: No package(s) specified";
 				exit 1;
 			elif [[ ${1} == "ALL" ]]; then
 				aurpkg_full_update;
+			elif [[ $# != 1 ]]; then
+				for i in $@; do
+					echo "Updating package $i..."
+					aurpkg_update "$i"
+				done
 			else
 				while [[ $# -ge 1 ]]; do
 					aurpkg_update "${1}";
@@ -370,10 +386,10 @@ if [[ ${1} != "" ]]; then
 		# If no command matches
 		*)
 		shift
-			echo "Invalid command";
+			echo "Invalid switch specified.";
 			echo "Type aurpkg --help for a list of the commands";;
 	esac
 else
-	echo "Invalid command";
+	echo "No command specified.";
 	echo "Type aurpkg --help for a list of the commands";
 fi;
