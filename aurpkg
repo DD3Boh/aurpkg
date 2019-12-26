@@ -377,12 +377,14 @@ aurpkg_functions() {
 				# If no command matches
 				*)
 					echo "Invalid command";
-					echo "Type aurpkg --help for a list of the commands";;
+					echo "Type aurpkg --help for a list of the commands"
+					exit 1;;
 			esac
 		done
 	else
 		echo "Invalid command";
-		echo "Type aurpkg --help for a list of the commands";
+		echo "Type aurpkg --help for a list of the commands"
+		exit 1;
 	fi;
 };
 
