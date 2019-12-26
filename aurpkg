@@ -291,87 +291,46 @@ aurpkg_info() {
 	fi;
 };
 
-# The scripty part
 aurpkg_functions() {
-	while [[ $# -ge 1 ]]; do
-		case "${1}" in
+	operation=${1}
+	if [[ -z $arguments ]]; then
+		if [[ ! -z $(echo $operation | grep '\-h\|\--help\|\-v\|\--version\|\--about') ]]; then
+			arguments="F";
+		else
+			echo "This command needs an argument"
+			echo "Type aurpkg --help for a list of the commands"
+			exit 1;
+		fi;
+	fi;
 
+	for arg in $arguments; do
+		case "$operation" in
 			# Helping menu
 			"-h" | "--help")
-			shift
 				aurpkg_help;;
 
 			# Version infos
 			"--version" | "--about" | "-v")
-			shift
 				aurpkg_version;;
 
 			# Installing
 			"-S" | "--sync" | "--install")
-			shift
-				if [[ ${1} == "" ]]; then
-					echo "Fatal: No package specified";
-					exit 1;
-				else
-					while [[ $# -ge 1 ]]; do
-						aurpkg_install "${1}";
-					shift
-					done
-				fi;;
+				aurpkg_install $arg;;
 
 			# Uninstall/remove
 			"-R" | "--remove" | "--uninstall")
-			shift
-				if [[ ${1} == "" ]]; then
-					echo "Fatal: No package specified";
-					exit 1;
-				else
-					while [[ $# -ge 1 ]]; do
-						aurpkg_uninstall "${1}";
-					shift
-					done
-				fi;;
+				aurpkg_uninstall $arg;;
 
 			# Update
 			"-U" | "--update" | "--upgrade")
-			shift
-				if [[ ${1} == "" ]]; then
-					echo "Fatal: No package specified";
-					exit 1;
-				elif [[ ${1} == "ALL" ]]; then
-					aurpkg_full_update;
-					shift;
-				else
-					while [[ $# -ge 1 ]]; do
-						aurpkg_update "${1}";
-					shift
-					done
-				fi;;
+				[[ $arg == "ALL" ]] && aurpkg_full_update || aurpkg_update $arg;;
 
 			# Search
 			"-Ss" | "-s" | "--search")
-			shift
-				if [[ ${1} == "" ]]; then
-					echo "No query specified";
-					exit 1;
-				else
-					while [[ $# -ge 1 ]]; do
-						aurpkg_search "${1}";
-					shift
-					done
-				fi;;
+				aurpkg_search $arg;;
 
 			"-i" | "--info")
-			shift
-				if [[ ${1} == "" ]]; then
-					echo "Fatal: No package specified";
-					exit 1;
-				else
-					while [[ $# -ge 1 ]]; do
-						aurpkg_info "${1}";
-					shift
-					done
-				fi;;
+				aurpkg_info $arg;;
 
 			# If no command matches
 			*)
@@ -391,10 +350,10 @@ if [[ ! -z $@ ]]; then
 		if [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ -z "${command}" ]]; then
 			command="$input"
 		elif [[ "${input}" != -* ]] && [[ "${input}" != --* ]]; then
-			command="$command $input"
+			arguments="$arguments $input"
 		elif [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ ! -z "${command}" ]]; then
 			aurpkg_functions $command
-			unset command;
+			unset command arguments;
 			command=$input;
 		fi;
 
