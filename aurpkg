@@ -293,118 +293,116 @@ aurpkg_info() {
 
 # The scripty part
 aurpkg_functions() {
-	if [[ ${1} != "" ]]; then
-		while [[ $# -ge 1 ]]; do
-			case "${1}" in
+	while [[ $# -ge 1 ]]; do
+		case "${1}" in
 
-				# Helping menu
-				"-h" | "--help")
-				shift
-					aurpkg_help;;
+			# Helping menu
+			"-h" | "--help")
+			shift
+				aurpkg_help;;
 
-				# Version infos
-				"--version" | "--about" | "-v")
-				shift
-					aurpkg_version;;
+			# Version infos
+			"--version" | "--about" | "-v")
+			shift
+				aurpkg_version;;
 
-				# Installing
-				"-S" | "--sync" | "--install")
-				shift
-					if [[ ${1} == "" ]]; then
-						echo "Fatal: No package specified";
-						exit 1;
-					else
-						while [[ $# -ge 1 ]]; do
-							aurpkg_install "${1}";
-						shift
-						done
-					fi;;
+			# Installing
+			"-S" | "--sync" | "--install")
+			shift
+				if [[ ${1} == "" ]]; then
+					echo "Fatal: No package specified";
+					exit 1;
+				else
+					while [[ $# -ge 1 ]]; do
+						aurpkg_install "${1}";
+					shift
+					done
+				fi;;
 
-				# Uninstall/remove
-				"-R" | "--remove" | "--uninstall")
-				shift
-					if [[ ${1} == "" ]]; then
-						echo "Fatal: No package specified";
-						exit 1;
-					else
-						while [[ $# -ge 1 ]]; do
-							aurpkg_uninstall "${1}";
-						shift
-						done
-					fi;;
+			# Uninstall/remove
+			"-R" | "--remove" | "--uninstall")
+			shift
+				if [[ ${1} == "" ]]; then
+					echo "Fatal: No package specified";
+					exit 1;
+				else
+					while [[ $# -ge 1 ]]; do
+						aurpkg_uninstall "${1}";
+					shift
+					done
+				fi;;
 
-				# Update
-				"-U" | "--update" | "--upgrade")
-				shift
-					if [[ ${1} == "" ]]; then
-						echo "Fatal: No package specified";
-						exit 1;
-					elif [[ ${1} == "ALL" ]]; then
-						aurpkg_full_update;
-						shift;
-					else
-						while [[ $# -ge 1 ]]; do
-							aurpkg_update "${1}";
-						shift
-						done
-					fi;;
+			# Update
+			"-U" | "--update" | "--upgrade")
+			shift
+				if [[ ${1} == "" ]]; then
+					echo "Fatal: No package specified";
+					exit 1;
+				elif [[ ${1} == "ALL" ]]; then
+					aurpkg_full_update;
+					shift;
+				else
+					while [[ $# -ge 1 ]]; do
+						aurpkg_update "${1}";
+					shift
+					done
+				fi;;
 
-				# Search
-				"-Ss" | "-s" | "--search")
-				shift
-					if [[ ${1} == "" ]]; then
-						echo "No query specified";
-						exit 1;
-					else
-						while [[ $# -ge 1 ]]; do
-							aurpkg_search "${1}";
-						shift
-						done
-					fi;;
+			# Search
+			"-Ss" | "-s" | "--search")
+			shift
+				if [[ ${1} == "" ]]; then
+					echo "No query specified";
+					exit 1;
+				else
+					while [[ $# -ge 1 ]]; do
+						aurpkg_search "${1}";
+					shift
+					done
+				fi;;
 
-				"-i" | "--info")
-				shift
-					if [[ ${1} == "" ]]; then
-						echo "Fatal: No package specified";
-						exit 1;
-					else
-						while [[ $# -ge 1 ]]; do
-							aurpkg_info "${1}";
-						shift
-						done
-					fi;;
+			"-i" | "--info")
+			shift
+				if [[ ${1} == "" ]]; then
+					echo "Fatal: No package specified";
+					exit 1;
+				else
+					while [[ $# -ge 1 ]]; do
+						aurpkg_info "${1}";
+					shift
+					done
+				fi;;
 
-				# If no command matches
-				*)
-					echo "Invalid command";
-					echo "Type aurpkg --help for a list of the commands"
-					exit 1;;
-			esac
-		done
-	else
-		echo "Invalid command";
-		echo "Type aurpkg --help for a list of the commands"
-		exit 1;
-	fi;
+			# If no command matches
+			*)
+				echo "Invalid command";
+				echo "Type aurpkg --help for a list of the commands"
+				exit 1;;
+		esac
+	done
 };
 
 # Cleanup first
 aurpkg_cleanup
 
-totalwords=$(echo $* | wc -w)
+if [[ ! -z $@ ]]; then
+	totalwords=$(echo $* | wc -w)
+	for input in $@; do
+		if [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ -z "${command}" ]]; then
+			command="$input"
+		elif [[ "${input}" != -* ]] && [[ "${input}" != --* ]]; then
+			command="$command $input"
+		elif [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ ! -z "${command}" ]]; then
+			aurpkg_functions $command
+			unset command;
+			command=$input;
+		fi;
 
-for input in $@; do
-	if [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ -z "${command}" ]]; then
-		command="$input"
-	elif [[ "${input}" != -* ]] && [[ "${input}" != --* ]]; then
-		command="$command $input"
-	elif [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ ! -z "${command}" ]]; then
-		aurpkg_functions $command
-		unset command;
-		command=$input;
-	fi;
-
-	if [[ ${!totalwords} == $input ]]; then
-		aurpkg_functions $command
-	fi;
-done
+		if [[ ${!totalwords} == $input ]]; then
+			aurpkg_functions $command
+		fi;
+	done
+else
+		echo "Command not provided";
+		echo "Type aurpkg --help for a list of the commands"
+fi;
