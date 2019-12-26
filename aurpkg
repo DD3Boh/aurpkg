@@ -398,6 +398,7 @@ if [[ ! -z $@ ]]; then
 			command=$input;
 		fi;
 
+		# Check if the last argument passed to aurpkg matches the current input
 		if [[ ${!totalwords} == $input ]]; then
 			aurpkg_functions $command
 		fi;
