@@ -93,7 +93,17 @@ aurpkg_install() {
 
 			# Build the package
 			cd /tmp/build/${PKG};
-			makepkg -s;
+			if [[ $chroot == true ]]; then
+				chrootcommand="makechrootpkg -c -r $CHROOT"
+				if [[ ! -z $(ls /tmp/build/chrootdeps/pkgs) ]]; then
+					for dep in $(ls -d /tmp/build/chrootdeps/pkgs/*); do
+						chrootcommand="$chrootcommand -I $dep"
+					done
+				fi
+				$chrootcommand
+			else
+				makepkg -s;
+			fi;
 			echo "";
 			# Install the package
 			sudo pacman -U $(ls | grep '.pkg.tar.xz') --noconfirm;
@@ -123,9 +133,26 @@ install_deps() {
 	while [[ $# -ge 1 ]]; do
 		depPKG="${1}";
 		aurpkg_deps;
+		[[ $chroot == true ]] && aurpkg_deps_chroot
 	shift
 	done
 };
+
+aurpkg_deps_chroot() {
+	if [[ ! -d /tmp/build/chrootdeps/pkgs ]]; then
+		mkdir -p /tmp/build/chrootdeps/pkgs
+	fi;
+
+	# Only install AUR packages, official packages can be handled by pacman itself
+	if [[ -z $(pacman -Si $depPKG) ]]; then
+		# Clone the repository
+		git clone --depth=1 https://aur.archlinux.org/${depPKG}.git /tmp/build/chrootdeps/${depPKG}
+		cd /tmp/build/chrootdeps/${depPKG}
+		makepkg -s
+		cp *.pkg.tar.xz /tmp/build/chrootdeps/pkgs/
+		cd $initial_dir
+	fi;
+}
 
 aurpkg_deps() {
 	# Check if the package is already installed first
@@ -308,10 +335,21 @@ aurpkg_info() {
 	fi;
 };
 
+aurpkg_chroot_setup() {
+	# Chroot
+	CHROOT=~/.aurpkg/chroot
+	if [[ ! -d ~/.aurpkg/chroot ]]; then
+		mkdir -p ~/.aurpkg/chroot
+		mkarchroot $CHROOT/root base-devel
+	else
+		arch-nspawn $CHROOT/root pacman -Syu
+	fi;
+};
+
 aurpkg_functions() {
 	operation=${1}
 	if [[ -z $arguments ]]; then
-		if [[ ! -z $(echo $operation | grep 'h\|help\|v\|version\|about') ]]; then
+		if [[ ! -z $(echo $operation | grep 'h\|help\|v\|version\|about\|c\|chroot') ]]; then
 			arguments="F";
 		else
 			echo "This command needs an argument"
@@ -348,6 +386,10 @@ aurpkg_functions() {
 
 			"i" | "info")
 				aurpkg_info $arg;;
+
+			"c" | "chroot")
+				aurpkg_chroot_setup
+				chroot=true;;
 
 			# If no command matches
 			*)
