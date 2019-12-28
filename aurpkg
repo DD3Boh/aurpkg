@@ -311,7 +311,7 @@ aurpkg_info() {
 aurpkg_functions() {
 	operation=${1}
 	if [[ -z $arguments ]]; then
-		if [[ ! -z $(echo $operation | grep '\-h\|\--help\|\-v\|\--version\|\--about') ]]; then
+		if [[ ! -z $(echo $operation | grep 'h\|help\|v\|version\|about') ]]; then
 			arguments="F";
 		else
 			echo "This command needs an argument"
@@ -323,30 +323,30 @@ aurpkg_functions() {
 	for arg in $arguments; do
 		case "$operation" in
 			# Helping menu
-			"-h" | "--help")
+			"h" | "help")
 				aurpkg_help;;
 
 			# Version infos
-			"--version" | "--about" | "-v")
+			"version" | "about" | "v")
 				aurpkg_version;;
 
 			# Installing
-			"-S" | "--sync" | "--install")
+			"S" | "sync" | "install")
 				aurpkg_install $arg;;
 
 			# Uninstall/remove
-			"-R" | "--remove" | "--uninstall")
+			"R" | "remove" | "uninstall")
 				aurpkg_uninstall $arg;;
 
 			# Update
-			"-U" | "--update" | "--upgrade")
+			"U" | "update" | "upgrade")
 				[[ $arg == "ALL" ]] && aurpkg_full_update || aurpkg_update $arg;;
 
 			# Search
-			"-Ss" | "-s" | "--search")
+			"Ss" | "s" | "search")
 				aurpkg_search $arg;;
 
-			"-i" | "--info")
+			"i" | "info")
 				aurpkg_info $arg;;
 
 			# If no command matches
@@ -365,13 +365,13 @@ if [[ ! -z $@ ]]; then
 	totalwords=$(echo $* | wc -w)
 	for input in $@; do
 		if [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ -z "${command}" ]]; then
-			command="$input"
+			command="$(echo $input | sed 's|-||g')"
 		elif [[ "${input}" != -* ]] && [[ "${input}" != --* ]]; then
 			arguments="$arguments $input"
 		elif [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ ! -z "${command}" ]]; then
 			aurpkg_functions $command
 			unset command arguments;
-			command=$input;
+			command="$(echo $input | sed 's|-||g')"
 		fi;
 
 		# Check if the last argument passed to aurpkg matches the current input
