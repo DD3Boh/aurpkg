@@ -203,7 +203,7 @@ aurpkg_deps() {
 
 aurpkg_uninstall() {
 	# export the first argument received by the function as PKG
-	PKG="${1}"
+	PKG=$(echo "${1}" | sed "s|.*/||g")
 	# Uninstall the package
 	sudo pacman -R $PKG
 	# Remove the package from the packages list
@@ -412,6 +412,7 @@ if [[ ! -z $@ ]]; then
 					unset arguments
 					command="$(echo $input | sed "s|-||g")"
 				fi;;
+
 			*)
 				if [[ -z "${arguments}" ]]; then
 					arguments="$input"
