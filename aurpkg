@@ -402,7 +402,7 @@ aurpkg_functions() {
 };
 
 # Cleanup first
-aurpkg_cleanup
+aurpkg_cleanup&
 
 if [[ ! -z $@ ]]; then
 	totalwords=$(echo $* | wc -w)
