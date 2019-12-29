@@ -365,7 +365,7 @@ aurpkg_functions() {
 			exit 1;;
 		esac
 	else
-		for arg in $arguments; do
+		for arg in "$arguments"; do
 			case "$operation" in
 
 				# Installing
@@ -382,7 +382,7 @@ aurpkg_functions() {
 
 				# Search
 				"Ss" | "s" | "search")
-					aurpkg_search $arg;;
+					aurpkg_search "$arg";;
 
 				"i" | "info")
 					aurpkg_info $arg;;
@@ -401,8 +401,7 @@ aurpkg_functions() {
 aurpkg_cleanup&
 
 if [[ ! -z $@ ]]; then
-	totalwords=$(echo $* | wc -w)
-	for input in $@; do
+	for input in "$@"; do
 		if [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ -z "${command}" ]]; then
 			command="$(echo $input | sed "s|-||g")"
 		elif [[ "${input}" != -* ]] && [[ "${input}" != --* ]]; then
@@ -412,12 +411,8 @@ if [[ ! -z $@ ]]; then
 			unset command arguments
 			command="$(echo $input | sed "s|-||g")"
 		fi;
-
-		# Check if the last argument passed to aurpkg matches the current input
-		if [[ ${!totalwords} == $input ]]; then
-			aurpkg_functions $command
-		fi;
 	done
+	aurpkg_functions $command
 else
 		echo "Command not provided"
 		echo "Type aurpkg --help for a list of the commands"
