@@ -348,17 +348,8 @@ aurpkg_chroot_setup() {
 
 aurpkg_functions() {
 	operation=${1}
-	if [[ -z $arguments ]]; then
-		if [[ ! -z $(echo $operation | grep 'h\|help\|v\|version\|about\|c\|chroot') ]]; then
-			arguments="F";
-		else
-			echo "This command needs an argument"
-			echo "Type aurpkg --help for a list of the commands"
-			exit 1;
-		fi;
-	fi;
 
-	for arg in $arguments; do
+	if [[ -z $arguments ]]; then
 		case "$operation" in
 			# Helping menu
 			"h" | "help")
@@ -368,36 +359,46 @@ aurpkg_functions() {
 			"version" | "about" | "v")
 				aurpkg_version;;
 
-			# Installing
-			"S" | "sync" | "install")
-				aurpkg_install $arg;;
-
-			# Uninstall/remove
-			"R" | "remove" | "uninstall")
-				aurpkg_uninstall $arg;;
-
-			# Update
-			"U" | "update" | "upgrade")
-				[[ $arg == "ALL" ]] && aurpkg_full_update || aurpkg_update $arg;;
-
-			# Search
-			"Ss" | "s" | "search")
-				aurpkg_search $arg;;
-
-			"i" | "info")
-				aurpkg_info $arg;;
-
 			"c" | "chroot")
 				aurpkg_chroot_setup
 				chroot=true;;
 
-			# If no command matches
 			*)
-				echo "Invalid command";
-				echo "Type aurpkg --help for a list of the commands"
-				exit 1;;
+			echo "This command needs an argument"
+			echo "Type aurpkg --help for a list of the commands"
+			exit 1;
 		esac
-	done
+	else
+		for arg in $arguments; do
+			case "$operation" in
+
+				# Installing
+				"S" | "sync" | "install")
+					aurpkg_install $arg;;
+
+				# Uninstall/remove
+				"R" | "remove" | "uninstall")
+					aurpkg_uninstall $arg;;
+
+				# Update
+				"U" | "update" | "upgrade")
+					[[ $arg == "ALL" ]] && aurpkg_full_update || aurpkg_update $arg;;
+
+				# Search
+				"Ss" | "s" | "search")
+					aurpkg_search $arg;;
+
+				"i" | "info")
+					aurpkg_info $arg;;
+
+				# If no command matches
+				*)
+					echo "Invalid command";
+					echo "Type aurpkg --help for a list of the commands"
+					exit 1;;
+			esac
+		done
+	fi
 };
 
 # Cleanup first
