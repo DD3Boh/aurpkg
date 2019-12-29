@@ -92,7 +92,12 @@ aurpkg_install() {
 			fi;
 			echo ""
 			# Install the package
-			sudo pacman -U $(ls | grep ".pkg.tar.xz") --noconfirm
+			if [[ ! -z $(ls | grep ".pkg.tar.xz") ]]; then
+				sudo pacman -U $(ls | grep ".pkg.tar.xz") --noconfirm
+			else
+				echo "Package compilation failed!"
+			fi
+
 			# Log the package
 			if [[ -z $(echo $PKG | grep "\-git") ]]; then
 				pkgline="${PKG} ($(source "/tmp/build/${PKG}/PKGBUILD"; echo "${pkgver[@]}"))"
@@ -171,7 +176,12 @@ aurpkg_deps() {
 			makepkg -s
 			echo ""
 			# Install the package
-			sudo pacman -U $(ls | grep ".pkg.tar.xz") --noconfirm
+			if [[ ! -z $(ls | grep ".pkg.tar.xz") ]]; then
+				sudo pacman -U $(ls | grep ".pkg.tar.xz") --noconfirm
+			else
+				echo "Package compilation failed!"
+			fi
+
 			# Log the package
 			if [[ -z $(echo $depPKG | grep "\-git") ]]; then
 				pkgline="${depPKG} ($(source "/tmp/build/${depPKG}/PKGBUILD"; echo "${pkgver[@]}"))"
@@ -210,10 +220,14 @@ updating_function() {
 	makepkg -s
 	echo ""
 	# Update the package
-	sudo pacman -U $(ls | grep ".pkg.tar.xz") --noconfirm
-	# Update version entry in PKG list
-	sed -i /$PKG.*/d ~/.aurpkg_list
-	echo ${pkgline} >> ~/.aurpkg_list
+	if [[ ! -z $(ls | grep ".pkg.tar.xz") ]]; then
+		sudo pacman -U $(ls | grep ".pkg.tar.xz") --noconfirm
+		# Update version entry in PKG list
+		sed -i /$PKG.*/d ~/.aurpkg_list
+		echo ${pkgline} >> ~/.aurpkg_list
+	else
+		echo "Package compilation failed!"
+	fi
 	# Remove the build directory
 	cd $initial_dir
 	rm -rf /tmp/build
