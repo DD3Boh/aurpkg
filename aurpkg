@@ -402,15 +402,24 @@ aurpkg_cleanup&
 
 if [[ ! -z $@ ]]; then
 	for input in "$@"; do
-		if [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ -z "${command}" ]]; then
-			command="$(echo $input | sed "s|-||g")"
-		elif [[ "${input}" != -* ]] && [[ "${input}" != --* ]]; then
-			arguments="$arguments $input"
-		elif [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ ! -z "${command}" ]]; then
-			aurpkg_functions $command
-			unset command arguments
-			command="$(echo $input | sed "s|-||g")"
-		fi;
+		case "$input" in
+
+			-* | --*)
+				if [[ -z "${command}" ]]; then
+					command="$(echo $input | sed "s|-||g")"
+				else
+					aurpkg_functions $command
+					unset arguments
+					command="$(echo $input | sed "s|-||g")"
+				fi;;
+			*)
+				if [[ -z "${arguments}" ]]; then
+					arguments="$input"
+				else
+					aurpkg_functions $command
+					arguments="$input"
+				fi;;
+		esac
 	done
 	aurpkg_functions $command
 else
