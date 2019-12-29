@@ -12,15 +12,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Check for git presence
-if [[ $(pacman -T git) != "" ]]; then
-	echo "You need git to run aurpkg.";
-	echo "To install it run the following as root: pacman -S git";
-	exit 1;
-fi;
-
 # Variables
-initial_dir=$(pwd);
+initial_dir=$(pwd)
 version=1.3.0;
 
 aurpkg_help() {
@@ -35,7 +28,7 @@ operations:
     -U | --update <pkg|ALL>	update a package
     -v | --version | --about	display version
 EOF
-};
+}
 
 aurpkg_version() {
 	cat << EOF
@@ -46,53 +39,46 @@ aurpkg_version() {
     the terms of the GNU General Public License.
     https://github.com/DD3Boh/aurpkg
 EOF
-};
+}
 
 aurpkg_install() {
 	# export the first argument received by the function as PKG but make sure it contains no "/"
-	if [[ ! -z $(echo ${1} | grep "\/") ]]; then
-		PKG=$(echo ${1} | sed 's|.*/||')
-	else
-		PKG=${1}
-	fi;
+	PKG=$(echo ${1} | sed "s|.*/||")
 
 	# Check if the repo exists
 	if [[ ! -z $(curl -s https://aur.archlinux.org/packages/$PKG | grep "404 - Page Not Found") ]]; then
-		echo "Package '$PKG' not found in AUR repositories";
+		echo "Package '$PKG' not found in AUR repositories"
 		if [[ ! -z $(pacman -Si $PKG) ]]; then
-			sudo pacman -S $PKG;
+			sudo pacman -S $PKG
 		else
 			echo "Package '$PKG' not found in official packages"
 			echo "Try with 'aurpkg -s $PKG'"
-		fi;
+		fi
 	else
 		# Clone the package
-		mkdir /tmp/build;
-		git clone --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
+		git clone --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG}
 
 		# Choose if seeing the PKGBUILD
-		echo "View the PKGBUILD? (Y/n)";
-		read -s -n 1 REPLY0;
+		echo "View the PKGBUILD? (Y/n)"
+		read -s -n 1 REPLY0
 		if [[ $REPLY0 = "Y" ]] || [[ $REPLY0 = "y" ]] || [[ $REPLY0 = "" ]]; then
 			# open the PKGBUILD with a text editor
 			if [[ $EDITOR == "" ]]; then
-				vi /tmp/build/${PKG}/PKGBUILD;
+				vi /tmp/build/${PKG}/PKGBUILD
 			else
-				$EDITOR /tmp/build/${PKG}/PKGBUILD;
-			fi;
-		fi;
+				$EDITOR /tmp/build/${PKG}/PKGBUILD
+			fi
+		fi
 		# Choose to install or not
-		echo "Continue? (Y/n)";
-		read -s -n 1 REPLY1;
+		echo "Continue? (Y/n)"
+		read -s -n 1 REPLY1
 		if [[ $REPLY1 = "Y" ]] || [[ $REPLY1 = "y" ]] || [[ $REPLY1 = "" ]]; then
 			# Install the AUR dependencies
-			deps="$(source "/tmp/build/${PKG}/PKGBUILD" ; echo "${depends[@]}")"
-			makedeps="$(source "/tmp/build/${PKG}/PKGBUILD" ; echo "${makedepends[@]}")"
-			deps="$deps $makedeps"
-			install_deps ${deps};
+			deps="$(source "/tmp/build/${PKG}/PKGBUILD"; echo "${depends[@]}"; echo "${makedepends[@]}")"
+			install_deps ${deps}
 
 			# Build the package
-			cd /tmp/build/${PKG};
+			cd /tmp/build/${PKG}
 			if [[ $chroot == true ]]; then
 				chrootcommand="makechrootpkg -c -r $CHROOT"
 				if [[ ! -z $(ls /tmp/build/chrootdeps/pkgs) ]]; then
@@ -102,11 +88,11 @@ aurpkg_install() {
 				fi
 				$chrootcommand
 			else
-				makepkg -s;
+				makepkg -s
 			fi;
-			echo "";
+			echo ""
 			# Install the package
-			sudo pacman -U $(ls | grep '.pkg.tar.xz') --noconfirm;
+			sudo pacman -U $(ls | grep ".pkg.tar.xz") --noconfirm
 			# Log the package
 			if [[ -z $(echo $PKG | grep "\-git") ]]; then
 				pkgline="${PKG} ($(source "/tmp/build/${PKG}/PKGBUILD"; echo "${pkgver[@]}"))"
@@ -116,27 +102,27 @@ aurpkg_install() {
 			fi;
 
 			if [[ $(pacman -T ${PKG}) == "" ]]; then
-				sed -i /$PKG.*/d ~/.aurpkg_list;
-				echo ${pkgline} >> ~/.aurpkg_list;
+				sed -i /$PKG.*/d ~/.aurpkg_list
+				echo ${pkgline} >> ~/.aurpkg_list
 			fi;
 
 			# Remove the build directory
-			cd $initial_dir;
-			rm -rf /tmp/build;
+			cd $initial_dir
+			rm -rf /tmp/build
 		else
-			echo "Operation canceled";
-		fi;
-	fi;
-};
+			echo "Operation canceled"
+		fi
+	fi
+}
 
 install_deps() {
 	while [[ $# -ge 1 ]]; do
-		depPKG="${1}";
-		aurpkg_deps;
+		depPKG="${1}"
+		aurpkg_deps
 		[[ $chroot == true ]] && aurpkg_deps_chroot
 	shift
 	done
-};
+}
 
 aurpkg_deps_chroot() {
 	if [[ ! -d /tmp/build/chrootdeps/pkgs ]]; then
@@ -165,73 +151,73 @@ aurpkg_deps() {
 			echo "Retrying as AUR..."
 
 			# Clone the repository
-			git clone --depth=1 https://aur.archlinux.org/${depPKG}.git /tmp/build/${depPKG};
-			cd /tmp/build/${depPKG};
+			git clone --depth=1 https://aur.archlinux.org/${depPKG}.git /tmp/build/${depPKG}
+			cd /tmp/build/${depPKG}
 			echo "Installing dependency '$depPKG' from AUR"
 
 			# Choose if seeing the PKGBUILD
-			echo "View the PKGBUILD? (Y/n)";
-			read -s -n 1 REPLY0;
+			echo "View the PKGBUILD? (Y/n)"
+			read -s -n 1 REPLY0
 			if [[ $REPLY0 = "Y" ]] || [[ $REPLY0 = "y" ]] || [[ $REPLY0 = "" ]]; then
 				# open the PKGBUILD with a text editor
 				if [[ $EDITOR == "" ]]; then
-				vi ./PKGBUILD;
+				vi ./PKGBUILD
 				else
-					$EDITOR ./PKGBUILD;
-				fi;
-			fi;
+					$EDITOR ./PKGBUILD
+				fi
+			fi
 
 			# Build the package
-			makepkg -s;
-			echo "";
+			makepkg -s
+			echo ""
 			# Install the package
-			sudo pacman -U $(ls | grep '.pkg.tar.xz') --noconfirm;
+			sudo pacman -U $(ls | grep ".pkg.tar.xz") --noconfirm
 			# Log the package
 			if [[ -z $(echo $depPKG | grep "\-git") ]]; then
 				pkgline="${depPKG} ($(source "/tmp/build/${depPKG}/PKGBUILD"; echo "${pkgver[@]}"))"
 			else
 				cd src/$depPKG
 				pkgline="${depPKG} ($(git rev-parse HEAD | cut -c1-8))"
-			fi;
+			fi
 
 			if [[ $(pacman -T ${depPKG}) == "" ]]; then
-				sed -i /$depPKG.*/d ~/.aurpkg_list;
-				echo ${pkgline} >> ~/.aurpkg_list;
-			fi;
+				sed -i /$depPKG.*/d ~/.aurpkg_list
+				echo ${pkgline} >> ~/.aurpkg_list
+			fi
 
 			# Remove the build directory
-			cd $initial_dir;
-		fi;
-	fi;
-};
+			cd $initial_dir
+		fi
+	fi
+}
 
 aurpkg_uninstall() {
 	# export the first argument received by the function as PKG
 	PKG="${1}"
 	# Uninstall the package
-	sudo pacman -R $PKG;
+	sudo pacman -R $PKG
 	# Remove the package from the packages list
 	if [[ $(pacman -T ${PKG}) == ${PKG} ]]; then
-		sed -i /$PKG.*/d ~/.aurpkg_list;
-	fi;
-};
+		sed -i /$PKG.*/d ~/.aurpkg_list
+	fi
+}
 
 updating_function() {
 	# Clone the repository
 	pkgline="$PKG ($remote_package_version)"
-	cd /tmp/build/${PKG};
+	cd /tmp/build/${PKG}
 	# Build the package
-	makepkg -s;
-	echo "";
+	makepkg -s
+	echo ""
 	# Update the package
-	sudo pacman -U $(ls | grep '.pkg.tar.xz') --noconfirm;
+	sudo pacman -U $(ls | grep ".pkg.tar.xz") --noconfirm
 	# Update version entry in PKG list
-	sed -i /$PKG.*/d ~/.aurpkg_list;
-	echo ${pkgline} >> ~/.aurpkg_list;
+	sed -i /$PKG.*/d ~/.aurpkg_list
+	echo ${pkgline} >> ~/.aurpkg_list
 	# Remove the build directory
-	cd $initial_dir;
-	rm -rf /tmp/build;
-};
+	cd $initial_dir
+	rm -rf /tmp/build
+}
 
 aurpkg_full_update() {
 	echo "Updating all the aur packages..."
@@ -239,64 +225,64 @@ aurpkg_full_update() {
 	cat ~/.aurpkg_list | sed 's/ (.*)//g' | tr "\n" " "
 	echo ""
 	echo "Do you want to update? (Y/n)"
-	read -s -n 1 REPLY0;
+	read -s -n 1 REPLY0
 	if [[ $REPLY0 = "Y" ]] || [[ $REPLY0 = "y" ]] || [[ $REPLY0 = "" ]]; then
 		while read list; do
-			aurpkg_update $(echo $list | sed 's/(.*)//g')
+			aurpkg_update $(echo $list | sed "s/(.*)//g")
 		done < ~/.aurpkg_list
 	else
 		echo "Operation canceled"
-	fi;
-};
+	fi
+}
 
 aurpkg_update() {
 	# export the first argument received by the function as PKG
 	PKG="${1}"
 	# check the local package version
-	local_package_version=$(grep $PKG ~/.aurpkg_list | sed 's/.*(//;s/)//')
-	git clone -q --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG};
+	local_package_version=$(grep $PKG ~/.aurpkg_list | sed "s/.*(//;s/)//")
+	git clone -q --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG}
 
 	# check the remote package version
 	if [[ -z $(echo $PKG | grep "\-git") ]]; then
 		remote_package_version=$(source /tmp/build/${PKG}/PKGBUILD; echo "${pkgver[@]}")
 	else
-		repo=$(source /tmp/build/${PKG}/PKGBUILD; echo "${source[@]}" | sed 's|.*//|https://|')
+		repo=$(source /tmp/build/${PKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*//|https://|")
 		remote_package_version=$(git ls-remote $repo HEAD | cut -c1-8)
 	fi
 
 	# If the package version is different update the package
 	if [[ $remote_package_version != $local_package_version ]]; then
-		updating_function;
+		updating_function
 	else
-		echo "The package $PKG is already up to date";
-		rm -rf /tmp/build;
-	fi;
-};
+		echo "The package $PKG is already up to date"
+		rm -rf /tmp/build
+	fi
+}
 
 # Cleanup
 aurpkg_cleanup() {
 	# Temp folder cleanup
-	rm -rf /tmp/build;
+	rm -rf /tmp/build
 
 	# Create .aurpkg_list if not present
 	if [[ ! -f ~/.aurpkg_list ]]; then
-		touch ~/.aurpkg_list;
+		touch ~/.aurpkg_list
 	fi;
 
 	# List cleanup
 	while read package; do
 		if [[ $(pacman -T $package) == "$package" ]]; then
-			sed -i /$package.*/d ~/.aurpkg_list;
-		fi;
+			sed -i /$package.*/d ~/.aurpkg_list
+		fi
 	done < ~/.aurpkg_list
-};
+}
 
 aurpkg_search() {
-	PKG=${1};
 	# Search for keyword on AUR and list result
 
+	PKG="${1}"
 	# Total pages of list for the package searched
-	total_pages=$(curl -s "https://aur.archlinux.org/packages/?K=$PKG&PP=250" | grep 'packages found' -m 1 | sed 's/.*packages found.*Page //;s/\..*//;s/.*of //')
+	total_pages=$(curl -s "https://aur.archlinux.org/packages/?K=$PKG&PP=250" | grep "packages found" -m 1 | sed "s/.*packages found.*Page //;s/\..*//;s/.*of //")
 
 	# The current page we are at
 	current_page=$(curl -s "https://aur.archlinux.org/packages/?K=$PKG&PP=250" | grep 'packages found' -m 1 | sed 's/.*packages found.*Page //;s/\..*//;s/ of.*//')
@@ -314,26 +300,22 @@ aurpkg_search() {
 
 aurpkg_info() {
 	# export the first argument received by the function as PKG but make sure it contains no "/"
-	if [[ ! -z $(echo ${1} | grep "\/") ]]; then
-		PKG=$(echo ${1} | sed 's|.*/||')
-	else
-		PKG=${1}
-	fi;
+	PKG=$(echo ${1} | sed "s|.*/||")
 
 	if [[ ! -z $(curl -s https://aur.archlinux.org/packages/$PKG | grep "404 - Page Not Found") ]]; then
-		pkg_info=$(pacman -Si $PKG | grep Description | sed 's/.*: //g')
+		pkg_info=$(pacman -Si $PKG | grep Description | sed "s/.*: //g")
 	else
 		pkg_info=$(curl -s https://aur.archlinux.org/packages/$PKG/ | grep "<th>Description" -A 1 | grep "</td>" | sed "s/<\/.*//;s/.*>//")
-	fi;
+	fi
 
 	if [[ -z $pkg_info ]]; then
-		echo "Invalid package!";
-		echo "Use aurpkg -s <query> to search for packages";
+		echo "Invalid package!"
+		echo "Use aurpkg -s <query> to search for packages"
 	else
 		echo "${1}"
-		echo "    $pkg_info";
-	fi;
-};
+		echo "    $pkg_info"
+	fi
+}
 
 aurpkg_chroot_setup() {
 	# Chroot
@@ -343,8 +325,8 @@ aurpkg_chroot_setup() {
 		mkarchroot $CHROOT/root base-devel
 	else
 		arch-nspawn $CHROOT/root pacman -Syu
-	fi;
-};
+	fi
+}
 
 aurpkg_functions() {
 	operation=${1}
@@ -366,7 +348,7 @@ aurpkg_functions() {
 			*)
 			echo "This command needs an argument"
 			echo "Type aurpkg --help for a list of the commands"
-			exit 1;
+			exit 1;;
 		esac
 	else
 		for arg in $arguments; do
@@ -393,13 +375,13 @@ aurpkg_functions() {
 
 				# If no command matches
 				*)
-					echo "Invalid command";
+					echo "Invalid command"
 					echo "Type aurpkg --help for a list of the commands"
 					exit 1;;
 			esac
 		done
 	fi
-};
+}
 
 # Cleanup first
 aurpkg_cleanup&
@@ -408,13 +390,13 @@ if [[ ! -z $@ ]]; then
 	totalwords=$(echo $* | wc -w)
 	for input in $@; do
 		if [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ -z "${command}" ]]; then
-			command="$(echo $input | sed 's|-||g')"
+			command="$(echo $input | sed "s|-||g")"
 		elif [[ "${input}" != -* ]] && [[ "${input}" != --* ]]; then
 			arguments="$arguments $input"
 		elif [[ "${input}" = -* ]] || [[ "${input}" = --* ]] && [[ ! -z "${command}" ]]; then
 			aurpkg_functions $command
-			unset command arguments;
-			command="$(echo $input | sed 's|-||g')"
+			unset command arguments
+			command="$(echo $input | sed "s|-||g")"
 		fi;
 
 		# Check if the last argument passed to aurpkg matches the current input
@@ -423,6 +405,6 @@ if [[ ! -z $@ ]]; then
 		fi;
 	done
 else
-		echo "Command not provided";
+		echo "Command not provided"
 		echo "Type aurpkg --help for a list of the commands"
 fi;
