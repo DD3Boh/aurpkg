@@ -284,11 +284,11 @@ aurpkg_cleanup() {
 	fi;
 
 	# List cleanup
-	while read package; do
+	for package in $(cat ~/.aurpkg_list | sed 's|(.*)||g'); do
 		if [[ $(pacman -T $package) == "$package" ]]; then
 			sed -i /$package.*/d ~/.aurpkg_list
 		fi
-	done < ~/.aurpkg_list
+	done
 }
 
 aurpkg_search() {
