@@ -102,7 +102,8 @@ aurpkg_install() {
 			if [[ -z $(echo $PKG | grep "\-git") ]]; then
 				pkgline="${PKG} ($(source "/tmp/build/${PKG}/PKGBUILD"; echo "${pkgver[@]}"))"
 			else
-				cd src/$PKG
+				folder=$(source /tmp/build/${PKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
+				cd src/$folder*
 				pkgline="${PKG} ($(git rev-parse HEAD | cut -c1-8))"
 			fi;
 
@@ -186,7 +187,8 @@ aurpkg_deps() {
 			if [[ -z $(echo $depPKG | grep "\-git") ]]; then
 				pkgline="${depPKG} ($(source "/tmp/build/${depPKG}/PKGBUILD"; echo "${pkgver[@]}"))"
 			else
-				cd src/$depPKG
+				folder=$(source /tmp/build/${depPKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
+				cd src/$folder*
 				pkgline="${depPKG} ($(git rev-parse HEAD | cut -c1-8))"
 			fi
 
