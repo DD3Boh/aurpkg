@@ -56,7 +56,7 @@ aurpkg_install() {
 		fi
 	else
 		# Clone the package
-		git clone --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG}
+		git clone --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/aurpkg/${PKG}
 
 		# Choose if seeing the PKGBUILD
 		echo "View the PKGBUILD? (Y/n)"
@@ -64,9 +64,9 @@ aurpkg_install() {
 		if [[ $REPLY0 = "Y" ]] || [[ $REPLY0 = "y" ]] || [[ $REPLY0 = "" ]]; then
 			# open the PKGBUILD with a text editor
 			if [[ $EDITOR == "" ]]; then
-				vi /tmp/build/${PKG}/PKGBUILD
+				vi /tmp/aurpkg/${PKG}/PKGBUILD
 			else
-				$EDITOR /tmp/build/${PKG}/PKGBUILD
+				$EDITOR /tmp/aurpkg/${PKG}/PKGBUILD
 			fi
 		fi
 		# Choose to install or not
@@ -74,15 +74,15 @@ aurpkg_install() {
 		read -s -n 1 REPLY1
 		if [[ $REPLY1 = "Y" ]] || [[ $REPLY1 = "y" ]] || [[ $REPLY1 = "" ]]; then
 			# Install the AUR dependencies
-			deps="$(source "/tmp/build/${PKG}/PKGBUILD"; echo "${depends[@]}"; echo "${makedepends[@]}")"
+			deps="$(source "/tmp/aurpkg/${PKG}/PKGBUILD"; echo "${depends[@]}"; echo "${makedepends[@]}")"
 			install_deps ${deps}
 
 			# Build the package
-			cd /tmp/build/${PKG}
+			cd /tmp/aurpkg/${PKG}
 			if [[ $chroot == true ]]; then
 				chrootcommand="makechrootpkg -c -r $CHROOT"
-				if [[ ! -z $(ls /tmp/build/chrootdeps/pkgs) ]]; then
-					for dep in $(ls -d /tmp/build/chrootdeps/pkgs/*); do
+				if [[ ! -z $(ls /tmp/aurpkg/chrootdeps/pkgs) ]]; then
+					for dep in $(ls -d /tmp/aurpkg/chrootdeps/pkgs/*); do
 						chrootcommand="$chrootcommand -I $dep"
 					done
 				fi
@@ -100,9 +100,9 @@ aurpkg_install() {
 
 			# Log the package
 			if [[ -z $(echo $PKG | grep "\-git") ]]; then
-				pkgline="${PKG} ($(source "/tmp/build/${PKG}/PKGBUILD"; echo "${pkgver[@]}"))"
+				pkgline="${PKG} ($(source "/tmp/aurpkg/${PKG}/PKGBUILD"; echo "${pkgver[@]}"))"
 			else
-				folder=$(source /tmp/build/${PKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
+				folder=$(source /tmp/aurpkg/${PKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
 				cd src/$folder*
 				pkgline="${PKG} ($(git rev-parse HEAD | cut -c1-8))"
 			fi;
@@ -114,7 +114,7 @@ aurpkg_install() {
 
 			# Remove the build directory
 			cd $initial_dir
-			rm -rf /tmp/build
+			rm -rf /tmp/aurpkg
 		else
 			echo "Operation canceled"
 		fi
@@ -131,17 +131,17 @@ install_deps() {
 }
 
 aurpkg_deps_chroot() {
-	if [[ ! -d /tmp/build/chrootdeps/pkgs ]]; then
-		mkdir -p /tmp/build/chrootdeps/pkgs
+	if [[ ! -d /tmp/aurpkg/chrootdeps/pkgs ]]; then
+		mkdir -p /tmp/aurpkg/chrootdeps/pkgs
 	fi;
 
 	# Only install AUR packages, official packages can be handled by pacman itself
 	if [[ -z $(pacman -Si $depPKG) ]]; then
 		# Clone the repository
-		git clone --depth=1 https://aur.archlinux.org/${depPKG}.git /tmp/build/chrootdeps/${depPKG}
-		cd /tmp/build/chrootdeps/${depPKG}
+		git clone --depth=1 https://aur.archlinux.org/${depPKG}.git /tmp/aurpkg/chrootdeps/${depPKG}
+		cd /tmp/aurpkg/chrootdeps/${depPKG}
 		makepkg -s
-		cp *.pkg.tar.xz /tmp/build/chrootdeps/pkgs/
+		cp *.pkg.tar.xz /tmp/aurpkg/chrootdeps/pkgs/
 		cd $initial_dir
 	fi;
 }
@@ -157,8 +157,8 @@ aurpkg_deps() {
 			echo "Retrying as AUR..."
 
 			# Clone the repository
-			git clone --depth=1 https://aur.archlinux.org/${depPKG}.git /tmp/build/${depPKG}
-			cd /tmp/build/${depPKG}
+			git clone --depth=1 https://aur.archlinux.org/${depPKG}.git /tmp/aurpkg/${depPKG}
+			cd /tmp/aurpkg/${depPKG}
 			echo "Installing dependency '$depPKG' from AUR"
 
 			# Choose if seeing the PKGBUILD
@@ -185,9 +185,9 @@ aurpkg_deps() {
 
 			# Log the package
 			if [[ -z $(echo $depPKG | grep "\-git") ]]; then
-				pkgline="${depPKG} ($(source "/tmp/build/${depPKG}/PKGBUILD"; echo "${pkgver[@]}"))"
+				pkgline="${depPKG} ($(source "/tmp/aurpkg/${depPKG}/PKGBUILD"; echo "${pkgver[@]}"))"
 			else
-				folder=$(source /tmp/build/${depPKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
+				folder=$(source /tmp/aurpkg/${depPKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
 				cd src/$folder*
 				pkgline="${depPKG} ($(git rev-parse HEAD | cut -c1-8))"
 			fi
@@ -217,7 +217,7 @@ aurpkg_uninstall() {
 updating_function() {
 	# Clone the repository
 	pkgline="$PKG ($remote_package_version)"
-	cd /tmp/build/${PKG}
+	cd /tmp/aurpkg/${PKG}
 	# Build the package
 	makepkg -s
 	echo ""
@@ -232,7 +232,7 @@ updating_function() {
 	fi
 	# Remove the build directory
 	cd $initial_dir
-	rm -rf /tmp/build
+	rm -rf /tmp/aurpkg
 }
 
 aurpkg_full_update() {
@@ -256,13 +256,13 @@ aurpkg_update() {
 	PKG="${1}"
 	# check the local package version
 	local_package_version=$(grep $PKG ~/.aurpkg_list | sed "s/.*(//;s/)//")
-	git clone -q --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/build/${PKG}
+	git clone -q --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/aurpkg/${PKG}
 
 	# check the remote package version
 	if [[ -z $(echo $PKG | grep "\-git") ]]; then
-		remote_package_version=$(source /tmp/build/${PKG}/PKGBUILD; echo "${pkgver[@]}")
+		remote_package_version=$(source /tmp/aurpkg/${PKG}/PKGBUILD; echo "${pkgver[@]}")
 	else
-		repo=$(source /tmp/build/${PKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*//|https://|")
+		repo=$(source /tmp/aurpkg/${PKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*//|https://|")
 		remote_package_version=$(git ls-remote $repo HEAD | cut -c1-8)
 	fi
 
@@ -271,14 +271,14 @@ aurpkg_update() {
 		updating_function
 	else
 		echo "The package $PKG is already up to date"
-		rm -rf /tmp/build
+		rm -rf /tmp/aurpkg
 	fi
 }
 
 # Cleanup
 aurpkg_cleanup() {
 	# Temp folder cleanup
-	rm -rf /tmp/build
+	rm -rf /tmp/aurpkg
 
 	# Create .aurpkg_list if not present
 	if [[ ! -f ~/.aurpkg_list ]]; then
