@@ -93,7 +93,7 @@ aurpkg_install() {
 			echo ""
 			# Install the package
 			if [[ ! -z $(ls | grep ".pkg.tar.xz") ]]; then
-				sudo pacman -U $(ls | grep ".pkg.tar.xz") --noconfirm
+				sudo pacman -U $(ls | grep -m 1 "$PKG.*.pkg.tar.xz") --noconfirm
 			else
 				echo "Package compilation failed!"
 			fi
@@ -102,8 +102,12 @@ aurpkg_install() {
 			if [[ -z $(echo $PKG | grep "\-git") ]]; then
 				pkgline="${PKG} ($(source "/tmp/aurpkg/${PKG}/PKGBUILD"; echo "${pkgver[@]}"))"
 			else
-				folder=$(source /tmp/aurpkg/${PKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
-				cd src/$folder*
+				if [[ -z $(source /tmp/aurpkg/${PKG}/PKGBUILD; echo "${source[@]}" | grep "::") ]]; then
+					folder=$(source /tmp/aurpkg/${PKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
+				else
+					folder=$(source /tmp/aurpkg/${PKG}/PKGBUILD; echo "${source[@]}" | sed "s|::.*||g")
+				fi;
+				cd src/$folder
 				pkgline="${PKG} ($(git rev-parse HEAD | cut -c1-8))"
 			fi;
 
@@ -178,7 +182,7 @@ aurpkg_deps() {
 			echo ""
 			# Install the package
 			if [[ ! -z $(ls | grep ".pkg.tar.xz") ]]; then
-				sudo pacman -U $(ls | grep ".pkg.tar.xz") --noconfirm
+				sudo pacman -U $(ls | grep -c 1 "$depPKG.*.pkg.tar.xz") --noconfirm
 			else
 				echo "Package compilation failed!"
 			fi
@@ -187,8 +191,12 @@ aurpkg_deps() {
 			if [[ -z $(echo $depPKG | grep "\-git") ]]; then
 				pkgline="${depPKG} ($(source "/tmp/aurpkg/${depPKG}/PKGBUILD"; echo "${pkgver[@]}"))"
 			else
-				folder=$(source /tmp/aurpkg/${depPKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
-				cd src/$folder*
+				if [[ -z $(source /tmp/aurpkg/${depPKG}/PKGBUILD; echo "${source[@]}" | grep "::") ]]; then
+					folder=$(source /tmp/aurpkg/${depPKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
+				else
+					folder=$(source /tmp/aurpkg/${depPKG}/PKGBUILD; echo "${source[@]}" | sed "s|::.*||g")
+				fi;
+				cd src/$folder
 				pkgline="${depPKG} ($(git rev-parse HEAD | cut -c1-8))"
 			fi
 
