@@ -74,7 +74,7 @@ aurpkg_install() {
 		read -s -n 1 REPLY1
 		if [[ $REPLY1 = "Y" ]] || [[ $REPLY1 = "y" ]] || [[ $REPLY1 = "" ]]; then
 			# Install the AUR dependencies
-			deps="$(source "/tmp/aurpkg/${PKG}/PKGBUILD"; echo "${depends[@]}"; echo "${makedepends[@]}")"
+			deps="$(source "/tmp/aurpkg/${PKG}/PKGBUILD" &> /dev/null; echo "${depends[@]}"; echo "${makedepends[@]}")"
 			install_deps ${deps}
 
 			# Build the package
@@ -100,12 +100,12 @@ aurpkg_install() {
 
 			# Log the package
 			if [[ -z $(echo $PKG | grep "\-git") ]]; then
-				pkgline="${PKG} ($(source "/tmp/aurpkg/${PKG}/PKGBUILD"; echo "${pkgver[@]}"))"
+				pkgline="${PKG} ($(source "/tmp/aurpkg/${PKG}/PKGBUILD" &> /dev/null; echo "${pkgver[@]}"))"
 			else
-				if [[ -z $(source /tmp/aurpkg/${PKG}/PKGBUILD; echo "${source[@]}" | grep "::") ]]; then
-					folder=$(source /tmp/aurpkg/${PKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
+				if [[ -z $(source /tmp/aurpkg/${PKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | grep "::") ]]; then
+					folder=$(source /tmp/aurpkg/${PKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
 				else
-					folder=$(source /tmp/aurpkg/${PKG}/PKGBUILD; echo "${source[@]}" | sed "s|::.*||g")
+					folder=$(source /tmp/aurpkg/${PKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | sed "s|::.*||g")
 				fi;
 				cd src/$folder
 				pkgline="${PKG} ($(git rev-parse HEAD | cut -c1-8))"
@@ -189,12 +189,12 @@ aurpkg_deps() {
 
 			# Log the package
 			if [[ -z $(echo $depPKG | grep "\-git") ]]; then
-				pkgline="${depPKG} ($(source "/tmp/aurpkg/${depPKG}/PKGBUILD"; echo "${pkgver[@]}"))"
+				pkgline="${depPKG} ($(source "/tmp/aurpkg/${depPKG}/PKGBUILD" &> /dev/null; echo "${pkgver[@]}"))"
 			else
-				if [[ -z $(source /tmp/aurpkg/${depPKG}/PKGBUILD; echo "${source[@]}" | grep "::") ]]; then
-					folder=$(source /tmp/aurpkg/${depPKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
+				if [[ -z $(source /tmp/aurpkg/${depPKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | grep "::") ]]; then
+					folder=$(source /tmp/aurpkg/${depPKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
 				else
-					folder=$(source /tmp/aurpkg/${depPKG}/PKGBUILD; echo "${source[@]}" | sed "s|::.*||g")
+					folder=$(source /tmp/aurpkg/${depPKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | sed "s|::.*||g")
 				fi;
 				cd src/$folder
 				pkgline="${depPKG} ($(git rev-parse HEAD | cut -c1-8))"
@@ -268,9 +268,9 @@ aurpkg_update() {
 
 	# check the remote package version
 	if [[ -z $(echo $PKG | grep "\-git") ]]; then
-		remote_package_version=$(source /tmp/aurpkg/${PKG}/PKGBUILD; echo "${pkgver[@]}")
+		remote_package_version=$(source /tmp/aurpkg/${PKG}/PKGBUILD &> /dev/null; echo "${pkgver[@]}")
 	else
-		repo=$(source /tmp/aurpkg/${PKG}/PKGBUILD; echo "${source[@]}" | sed "s|.*//|https://|")
+		repo=$(source /tmp/aurpkg/${PKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | sed "s|.*//|https://|")
 		remote_package_version=$(git ls-remote $repo HEAD | cut -c1-8)
 	fi
 
