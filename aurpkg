@@ -93,7 +93,7 @@ aurpkg_install() {
 			echo ""
 			# Install the package
 			if [[ ! -z $(ls | grep ".pkg.tar.xz") ]]; then
-				sudo pacman -U $(ls | grep -m 1 "$PKG.*.pkg.tar.xz") --noconfirm
+				sudo pacman -U $(ls | grep -m 1 "$PKG.*.pkg.tar.xz")
 			else
 				echo "Package compilation failed!"
 			fi
