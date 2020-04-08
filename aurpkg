@@ -104,13 +104,8 @@ aurpkg_install() {
 			if [[ -z $(echo $PKG | grep "\-git") ]]; then
 				pkgline="${ogPKG} ($(source "/tmp/aurpkg/${PKG}/PKGBUILD" &> /dev/null; echo "${pkgver[@]}"))"
 			else
-				if [[ -z $(source /tmp/aurpkg/${PKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | grep "::") ]]; then
-					folder=$(cat /tmp/aurpkg/${PKG}/.SRCINFO | grep -m1 'source =' | sed sed 's|.*/||g;s|.git||;s|.*= ||')
-				else
-					folder=$(cat /tmp/aurpkg/${PKG}/.SRCINFO | grep -m1 'source =' | sed 's|::.*||g;s|.*= ||')
-				fi;
-				cd src/$folder
-				pkgline="${ogPKG} ($(git rev-parse HEAD | cut -c1-8))"
+				repo=$(cat /tmp/aurpkg/${PKG}/.SRCINFO | grep -m1 'source =' | sed 's|.*//|https://|')
+				pkgline="${ogPKG} ($(git ls-remote $repo HEAD | cut -c1-8))"
 			fi;
 
 			if [[ $(pacman -T ${ogPKG}) == "" ]]; then
@@ -195,13 +190,8 @@ aurpkg_deps() {
 			if [[ -z $(echo $depPKG | grep "\-git") ]]; then
 				pkgline="${ogdepPKG} ($(source "/tmp/aurpkg/${depPKG}/PKGBUILD" &> /dev/null; echo "${pkgver[@]}"))"
 			else
-				if [[ -z $(source /tmp/aurpkg/${depPKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | grep "::") ]]; then
-					folder=$(cat /tmp/aurpkg/${depPKG}/.SRCINFO | grep -m1 'source =' | sed sed 's|.*/||g;s|.git||;s|.*= ||')
-				else
-					folder=$(cat /tmp/aurpkg/${depPKG}/.SRCINFO | grep -m1 'source =' | sed sed 's|.*/||g;s|.git||;s|.*= ||')
-				fi;
-				cd src/$folder
-				pkgline="${ogdepPKG} ($(git rev-parse HEAD | cut -c1-8))"
+				repo=$(cat /tmp/aurpkg/${depPKG}/.SRCINFO | grep -m1 'source =' | sed 's|.*//|https://|')
+				pkgline="${ogdepPKG} ($(git ls-remote $repo HEAD | cut -c1-8))"
 			fi
 
 			if [[ $(pacman -T ${ogdepPKG}) == "" ]]; then
