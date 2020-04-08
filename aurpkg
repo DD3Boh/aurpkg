@@ -56,6 +56,8 @@ aurpkg_install() {
 		fi
 	else
 		# Clone the package
+		ogPKG=$PKG
+		PKG=$(curl -s https://aur.archlinux.org/packages/${PKG} | grep -m 1 pkgbase_name: | sed 's|.* "||;s|".*||')
 		git clone --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/aurpkg/${PKG}
 
 		# Choose if seeing the PKGBUILD
@@ -93,14 +95,14 @@ aurpkg_install() {
 			echo ""
 			# Install the package
 			if [[ ! -z $(ls | grep ".pkg.tar.xz") ]]; then
-				sudo pacman -U $(ls | grep -m 1 "$PKG.*.pkg.tar.xz")
+				sudo pacman -U $(ls | grep -m 1 "$ogPKG.*.pkg.tar.xz")
 			else
 				echo "Package compilation failed!"
 			fi
 
 			# Log the package
 			if [[ -z $(echo $PKG | grep "\-git") ]]; then
-				pkgline="${PKG} ($(source "/tmp/aurpkg/${PKG}/PKGBUILD" &> /dev/null; echo "${pkgver[@]}"))"
+				pkgline="${ogPKG} ($(source "/tmp/aurpkg/${PKG}/PKGBUILD" &> /dev/null; echo "${pkgver[@]}"))"
 			else
 				if [[ -z $(source /tmp/aurpkg/${PKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | grep "::") ]]; then
 					folder=$(source /tmp/aurpkg/${PKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
@@ -108,11 +110,11 @@ aurpkg_install() {
 					folder=$(source /tmp/aurpkg/${PKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | sed "s|::.*||g")
 				fi;
 				cd src/$folder
-				pkgline="${PKG} ($(git rev-parse HEAD | cut -c1-8))"
+				pkgline="${ogPKG} ($(git rev-parse HEAD | cut -c1-8))"
 			fi;
 
-			if [[ $(pacman -T ${PKG}) == "" ]]; then
-				sed -i /$PKG.*/d ~/.aurpkg_list
+			if [[ $(pacman -T ${ogPKG}) == "" ]]; then
+				sed -i /$ogPKG.*/d ~/.aurpkg_list
 				echo ${pkgline} >> ~/.aurpkg_list
 			fi;
 
@@ -161,6 +163,8 @@ aurpkg_deps() {
 			echo "Retrying as AUR..."
 
 			# Clone the repository
+			ogdepPKG=$depPKG
+			depPKG=$(curl -s https://aur.archlinux.org/packages/${depPKG} | grep -m 1 pkgbase_name: | sed 's|.* "||;s|".*||')
 			git clone --depth=1 https://aur.archlinux.org/${depPKG}.git /tmp/aurpkg/${depPKG}
 			cd /tmp/aurpkg/${depPKG}
 			echo "Installing dependency '$depPKG' from AUR"
@@ -182,14 +186,14 @@ aurpkg_deps() {
 			echo ""
 			# Install the package
 			if [[ ! -z $(ls | grep ".pkg.tar.xz") ]]; then
-				sudo pacman -U $(ls | grep -c 1 "$depPKG.*.pkg.tar.xz") --noconfirm
+				sudo pacman -U $(ls | grep -c 1 "$ogdepPKG.*.pkg.tar.xz") --noconfirm
 			else
 				echo "Package compilation failed!"
 			fi
 
 			# Log the package
 			if [[ -z $(echo $depPKG | grep "\-git") ]]; then
-				pkgline="${depPKG} ($(source "/tmp/aurpkg/${depPKG}/PKGBUILD" &> /dev/null; echo "${pkgver[@]}"))"
+				pkgline="${ogdepPKG} ($(source "/tmp/aurpkg/${depPKG}/PKGBUILD" &> /dev/null; echo "${pkgver[@]}"))"
 			else
 				if [[ -z $(source /tmp/aurpkg/${depPKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | grep "::") ]]; then
 					folder=$(source /tmp/aurpkg/${depPKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | sed "s|.*/||g;s|.git||")
@@ -197,11 +201,11 @@ aurpkg_deps() {
 					folder=$(source /tmp/aurpkg/${depPKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | sed "s|::.*||g")
 				fi;
 				cd src/$folder
-				pkgline="${depPKG} ($(git rev-parse HEAD | cut -c1-8))"
+				pkgline="${ogdepPKG} ($(git rev-parse HEAD | cut -c1-8))"
 			fi
 
-			if [[ $(pacman -T ${depPKG}) == "" ]]; then
-				sed -i /$depPKG.*/d ~/.aurpkg_list
+			if [[ $(pacman -T ${ogdepPKG}) == "" ]]; then
+				sed -i /$ogdepPKG.*/d ~/.aurpkg_list
 				echo ${pkgline} >> ~/.aurpkg_list
 			fi
 
@@ -264,10 +268,13 @@ aurpkg_update() {
 	PKG="${1}"
 	# check the local package version
 	local_package_version=$(grep $PKG ~/.aurpkg_list | sed "s/.*(//;s/)//")
+
+	ogPKG=$PKG
+	PKG=$(curl -s https://aur.archlinux.org/packages/${PKG} | grep -m 1 pkgbase_name: | sed 's|.* "||;s|".*||')
 	git clone -q --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/aurpkg/${PKG}
 
 	# check the remote package version
-	if [[ -z $(echo $PKG | grep "\-git") ]]; then
+	if [[ -z $(echo $ogPKG | grep "\-git") ]]; then
 		remote_package_version=$(source /tmp/aurpkg/${PKG}/PKGBUILD &> /dev/null; echo "${pkgver[@]}")
 	else
 		repo=$(source /tmp/aurpkg/${PKG}/PKGBUILD &> /dev/null; echo "${source[@]}" | sed "s|.*//|https://|")
@@ -278,7 +285,7 @@ aurpkg_update() {
 	if [[ $remote_package_version != $local_package_version ]]; then
 		updating_function
 	else
-		echo "The package $PKG is already up to date"
+		echo "The package $ogPKG is already up to date"
 		rm -rf /tmp/aurpkg
 	fi
 }
