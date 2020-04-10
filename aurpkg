@@ -57,7 +57,7 @@ aurpkg_install() {
 	else
 		# Clone the package
 		ogPKG=$PKG
-		PKG=$(curl -s https://aur.archlinux.org/packages/${PKG} | grep -m 1 pkgbase_name: | sed 's|.* "||;s|".*||')
+		PKG=$(curl -s https://aur.archlinux.org/packages/${PKG} | grep -m 1 /pkgbase/ | sed 's|.*pkgbase/||;s|/.*||')
 		git clone --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/aurpkg/${PKG}
 
 		# Choose if seeing the PKGBUILD
@@ -159,7 +159,7 @@ aurpkg_deps() {
 
 			# Clone the repository
 			ogdepPKG=$depPKG
-			depPKG=$(curl -s https://aur.archlinux.org/packages/${depPKG} | grep -m 1 pkgbase_name: | sed 's|.* "||;s|".*||')
+			depPKG=$(curl -s https://aur.archlinux.org/packages/${depPKG} | grep -m 1 /pkgbase/ | sed 's|.*pkgbase/||;s|/.*||')
 			git clone --depth=1 https://aur.archlinux.org/${depPKG}.git /tmp/aurpkg/${depPKG}
 			cd /tmp/aurpkg/${depPKG}
 			echo "Installing dependency '$depPKG' from AUR"
@@ -260,7 +260,7 @@ aurpkg_update() {
 	local_package_version=$(grep $PKG ~/.aurpkg_list | sed "s/.*(//;s/)//")
 
 	ogPKG=$PKG
-	PKG=$(curl -s https://aur.archlinux.org/packages/${PKG} | grep -m 1 pkgbase_name: | sed 's|.* "||;s|".*||')
+	PKG=$(curl -s https://aur.archlinux.org/packages/${PKG} | grep -m 1 /pkgbase/ | sed 's|.*pkgbase/||;s|/.*||')
 	git clone -q --depth=1 https://aur.archlinux.org/${PKG}.git /tmp/aurpkg/${PKG}
 
 	# check the remote package version
