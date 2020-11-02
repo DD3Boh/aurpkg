@@ -94,8 +94,8 @@ aurpkg_install() {
 			fi;
 			echo ""
 			# Install the package
-			if [[ ! -z $(ls | grep ".pkg.tar.xz") ]]; then
-				sudo pacman -U $(ls | grep -m 1 "$ogPKG.*.pkg.tar.xz")
+			if [[ ! -z $(ls | grep ".pkg.tar.*") ]]; then
+				sudo pacman -U $(ls | grep -m 1 "$ogPKG.*.pkg.tar.*")
 			else
 				echo "Package compilation failed!"
 			fi
@@ -180,8 +180,8 @@ aurpkg_deps() {
 			makepkg -s
 			echo ""
 			# Install the package
-			if [[ ! -z $(ls | grep ".pkg.tar.xz") ]]; then
-				sudo pacman -U $(ls | grep -c 1 "$ogdepPKG.*.pkg.tar.xz") --noconfirm
+			if [[ ! -z $(ls | grep ".pkg.tar.*") ]]; then
+				sudo pacman -U $(ls | grep -m 1 "$ogdepPKG.*.pkg.tar.*") --noconfirm
 			else
 				echo "Package compilation failed!"
 			fi
@@ -224,8 +224,8 @@ updating_function() {
 	makepkg -s
 	echo ""
 	# Update the package
-	if [[ ! -z $(ls | grep ".pkg.tar.xz") ]]; then
-		sudo pacman -U $(ls | grep ".pkg.tar.xz") --noconfirm
+	if [[ ! -z $(ls | grep ".pkg.tar.*") ]]; then
+		sudo pacman -U $(ls | grep ".pkg.tar.*") --noconfirm
 		# Update version entry in PKG list
 		sed -i /$PKG.*/d ~/.aurpkg_list
 		echo ${pkgline} >> ~/.aurpkg_list
