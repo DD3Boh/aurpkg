@@ -304,16 +304,16 @@ aurpkg_search() {
 	input="${1}"
 	query=$(echo "${1}" | sed "s| |+|g")
 	# Total pages of list for the package searched
-	total_pages=$(curl -s "https://aur.archlinux.org/packages/?K=$query&PP=250" | grep "packages found" -m 1 | sed "s/.*packages found.*Page //;s/\..*//;s/.*of //")
+	total_pages=$(curl -s "https://aur.archlinux.org/packages?K=$query&PP=250" | grep "Page" -m 1 | sed "s/.*Page //;s/.*of //;s/\.//")
 
 	# The current page we are at
-	current_page=$(curl -s "https://aur.archlinux.org/packages/?K=$query&PP=250" | grep 'packages found' -m 1 | sed 's/.*packages found.*Page //;s/\..*//;s/ of.*//')
+	current_page=$(curl -s "https://aur.archlinux.org/packages?K=$query&PP=250" | grep "Page" -m 1 | sed "s/.*Page //;s/ .*//")
 
 	# Script to search for new pages in case there is any
 	until [[ $current_page == $(($total_pages + 1)) ]]; do
 		package_number=$(( ($current_page - 1) * 250))
 		current_page=$((current_page + 1))
-		curl -s -N "https://aur.archlinux.org/packages/?K=$query&PP=250&O=$package_number" | grep '<td><a href="/packages/\|<td class="wrap">' | sed 's|<td><a href=\"/packages/||;s|.*<td class="wrap">|    |;s|</.*||;s|.*>|aur/|g;'
+		curl -s -N "https://aur.archlinux.org/packages?K=$query&PP=250&O=$package_number" | grep '<a href="/packages/\|<td class="wrap">' | grep '<a href="/packages/\|<td class="wrap">' | sed 's|.*<a href=\"/packages/|aur/|;s|.*<td class="wrap">|    |;s|</td>||;s|\">||'
 	done
 
 	# Also search in official packages
